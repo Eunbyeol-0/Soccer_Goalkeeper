@@ -110,8 +110,8 @@ NodeStatus GolieMove::tick(){
     // double v = norm(vx, vy);
 
     // 속도 제한
-    controlx = cap(controlx, vLimit, -vLimit);    
-    controly = cap(controly, vLimit*0.7, -vLimit*0.7);
+    controlx = cap(controlx, vLimit, -vLimit*0.5);    
+    controly = cap(controly, vLimit*0.5, -vLimit*0.5);
 
     if (dist < stop_Threshold){
         controlx = 0;
@@ -156,8 +156,8 @@ NodeStatus GolieInitPos::tick(){
       controly = -errorx*sin(gtheta) + errory*cos(gtheta);
       controlx *= linearFactor;
       controly *= linearFactor;
-      controlx = cap(controlx, vLimit, -vLimit);    
-      controly = cap(controly, vLimit*0.7, -vLimit*0.7);
+      controlx = cap(controlx, vLimit, -vLimit*0.5);    
+      controly = cap(controly, vLimit*0.5, -vLimit*0.5);
       controltheta = errortheta * Kp;
     }
     else if(dist < turn_Threshold && dist > stop_Threshold){ // 선회
@@ -165,8 +165,8 @@ NodeStatus GolieInitPos::tick(){
       controly = -errorx*sin(gtheta) + errory*cos(gtheta);
       controlx *= linearFactor;
       controly *= linearFactor;
-      controlx = cap(controlx, vLimit, -vLimit);    
-      controly = cap(controly, vLimit*0.7, -vLimit*0.7);
+      controlx = cap(controlx, vLimit, -vLimit*0.5);    
+      controly = cap(controly, vLimit*0.5, -vLimit*0.5);
 	    controltheta = (targettheta - gtheta) * Kp; // 이러면 gtheta(로봇방향)이 targettheta를 바라봄
     }
     

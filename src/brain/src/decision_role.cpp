@@ -183,9 +183,9 @@ NodeStatus GoalieDecide::tick()
     // 파라미터(튜닝 포인트)
     // -----------------------------
     const double isolated_dist = 1.0;   // 골에서 이 거리보다 멀면 위험구역 밖 
-    const double isolated_y    = 1.0;   // |y|가 이보다 크면 외곽 
+    const double isolated_y    = 0.7;   // |y|가 이보다 크면 외곽 
     const double closer_margin      = 0.2;   // 내가 더 가깝다고 판정할 여유분
-    const double max_clear_run_dist = 1.0;   // 너무 멀면 골키퍼가 비우므로 clearing 금지
+    const double max_clear_run_dist = 0.7;   // 너무 멀면 골키퍼가 비우므로 clearing 금지
 
     // -----------------------------
     // 판정 기준

@@ -37,7 +37,7 @@ public:
     {
         return {
             InputPort<double>("stop_threshold", 0.1, "목표 위치 가까이 도달하면 정지"),
-            InputPort<double>("v_limit", 1.0, "최대 속도"),
+            InputPort<double>("v_limit", 0.7, "최대 속도"),
         };
     }
 
@@ -57,7 +57,7 @@ public:
         return {
             InputPort<double>("turn_threshold", 0.35, "여기까진 직진으로 성큼성큼 오다가, 여기부터 정면 바라보도록 회전"),
             InputPort<double>("stop_threshold", 0.1, "목표 위치 가까이 도달하면 정지"),
-            InputPort<double>("v_limit", 1.0, "최대 속도"),
+            InputPort<double>("v_limit", 0.6, "최대 속도"),
             InputPort<double>("init_golie_pos_x", -4.5, "골대중앙위치"),
             InputPort<double>("init_golie_pos_y", 0.0, "골대중앙위치"),
             InputPort<double>("init_golie_pos_theta", 0.0, "골대중앙위치"),

@@ -175,7 +175,7 @@ NodeStatus GoalieDecide::tick()
     for (const auto& r : rPos) {
         if (r.label != "Opponent") continue;
         hasOpponent = true;
-        double d = norm(bPos.x - rPos.x, bPos.y - rPos.y);
+        double d = norm(bPos.x - r.posToField.x, bPos.y - r.posToField.y);
         if (d < distOppToBallMin) distOppToBallMin = d;
     }
 
@@ -225,7 +225,7 @@ NodeStatus GoalieDecide::tick()
     brain->log->logToScreen(
         "tree/GoalieDecide",
         format("Decision:%s",
-               newDecision.c_str(),)
+        newDecision.c_str()),
         color
     );
     return NodeStatus::SUCCESS;

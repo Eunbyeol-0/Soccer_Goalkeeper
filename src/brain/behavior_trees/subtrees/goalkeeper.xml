@@ -42,13 +42,13 @@
 
               <ReactiveSequence _while="decision == 'hold'">
                 <CalcGoliePos />
-                <GolieMove stop_threshold="0.1" v_limit="1.0" />
+                <GolieMove stop_threshold="0.1" v_limit="0.7" />
               </ReactiveSequence>
 
-              <Sequence _while="decision == 'clearing'">
-                <Chase vx_limit="0.9" vy_limit="0.2" vtheta_limit="1.0" dist="0.4" safe_dist="0.5" />
-                <Kick speed_limit="1.0" min_msec_kick="300" msecs_stablize="100" kick_type="one_touch" />
-              </Sequence>
+              <ReactiveSequence _while="decision == 'clearing'">
+                <Chase vx_limit="0.5" vy_limit="0.1" vtheta_limit="1.0" dist="0.4" safe_dist="0.5" />
+                <Kick speed_limit="0.7" min_msec_kick="300" msecs_stablize="100" kick_type="one_touch" />
+              </ReactiveSequence>
 
             </Sequence>
           </ReactiveSequence>

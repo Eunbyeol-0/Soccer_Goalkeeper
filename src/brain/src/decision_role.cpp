@@ -14,6 +14,7 @@
 void RegisterDecisionRoleNodes(BT::BehaviorTreeFactory &factory, Brain* brain){
     REGISTER_DECISION_ROLE_BUILDER(StrikerDecide)
     REGISTER_DECISION_ROLE_BUILDER(GoalieDecide)
+    REGISTER_DECISION_ROLE_BUILDER(GoalieClearingDecide)
     REGISTER_DECISION_ROLE_BUILDER(DefenderDecide)
 }
 
@@ -231,6 +232,51 @@ NodeStatus GoalieDecide::tick()
     return NodeStatus::SUCCESS;
 }
 
+NodeStatus GoalieClearingDecide::tick()
+{
+    double chaseRangeThreshold;
+    double clearingThreshold;
+    getInput("chase_threshold", chaseRangeThreshold);
+    getInput("clearing_threshold", clearingThreshold);
+
+    std::string lastDecision;
+    getInput("decision_in", lastDecision);
+
+    // 1) clearing 범위 이탈 체크: 골문 중앙(-4.5, 0)에서 너무 멀어지면 hold로 복귀
+    const double goalCx = -4.5;
+    const double goalCy =  0.0;
+    auto gPos = brain->data->robotPoseToField;
+
+    double distFromGoalCenter = norm(gPos.x - goalCx, gPos.y - goalCy);
+    if (distFromGoalCenter > clearingThreshold) {
+        setOutput("decision_out", std::string("hold"));
+        return NodeStatus::SUCCESS;
+    }
+
+    auto ball = brain->data->ball;
+    double ballRange = ball.range;
+    double ballYaw   = ball.yawToRobot;
+
+    std::string newDecision;
+
+    // 멀면 chase 유지(히스테리시스 약간)
+    if (ballRange > chaseRangeThreshold * (lastDecision == "chase" ? 0.9 : 1.0)) {
+        newDecision = "clearing_chase";
+    } else {
+        // 가까우면 원터치 kick (adjust 없음)
+        newDecision = "clearing_kick";
+    }
+    
+    brain->log->logToScreen(
+        "tree/GoalieDecide",
+        format("Decision:%s",
+        newDecision.c_str()),
+        color
+    );
+
+    setOutput("decision_out", newDecision);
+    return NodeStatus::SUCCESS;
+}
 
 NodeStatus DefenderDecide::tick() {
     double chaseRangeThreshold;

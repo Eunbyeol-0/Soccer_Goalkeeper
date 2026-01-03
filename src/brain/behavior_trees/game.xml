@@ -42,6 +42,7 @@
                         </ReactiveSequence>
 
                         <ReactiveSequence _while="gc_game_state=='SET'" name="Set">
+                            <SetVelocity x="0.0" y="0.0" theta="0.0" />
                             <SubTree ID="CamFindAndTrackBall" _autoremap="true" /> 
                             <SubTree ID="Locate" _autoremap="true" />
                         </ReactiveSequence>

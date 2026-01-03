@@ -46,8 +46,12 @@
               </ReactiveSequence>
 
               <ReactiveSequence _while="decision == 'clearing'">
-                <Chase vx_limit="0.5" vy_limit="0.1" vtheta_limit="1.0" dist="0.4" safe_dist="0.5" />
-                <Kick speed_limit="0.7" min_msec_kick="300" msecs_stablize="100" kick_type="one_touch" />
+	              <ReactiveSequence>
+		              <GoalieClearingDecide decision_out="{clearing_decision}" decision_in="{clearing_decision}" />
+		            </ReactiveSequence>
+		            
+                <Chase _while="clearing_decision == 'clearing_chase'" vx_limit="0.5" vy_limit="0.1" vtheta_limit="1.0" dist="0.4" safe_dist="0.5" />
+                <Kick _while="clearing_decision == 'clearing_kick'" speed_limit="0.7" min_msec_kick="300" msecs_stablize="100" kick_type="one_touch" />
               </ReactiveSequence>
 
             </Sequence>

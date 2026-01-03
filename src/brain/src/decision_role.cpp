@@ -236,6 +236,7 @@ NodeStatus GoalieClearingDecide::tick()
 {
     double chaseRangeThreshold;
     double clearingThreshold;
+    auto color = 0xFFFFFFFF;
     getInput("chase_threshold", chaseRangeThreshold);
     getInput("clearing_threshold", clearingThreshold);
 
@@ -262,9 +263,11 @@ NodeStatus GoalieClearingDecide::tick()
     // 멀면 chase 유지(히스테리시스 약간)
     if (ballRange > chaseRangeThreshold * (lastDecision == "chase" ? 0.9 : 1.0)) {
         newDecision = "clearing_chase";
+        color = 0xFFFFFFFF;
     } else {
         // 가까우면 원터치 kick (adjust 없음)
         newDecision = "clearing_kick";
+        color = 0x00FF00FF;
     }
     
     brain->log->logToScreen(

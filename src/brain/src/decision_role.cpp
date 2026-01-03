@@ -139,56 +139,98 @@ NodeStatus StrikerDecide::tick() {
 
 NodeStatus GoalieDecide::tick()
 {
+    string lastDecision;
+    getInput("decision_in", lastDecision); // 사용 X
 
-    double chaseRangeThreshold;
-    getInput("chase_threshold", chaseRangeThreshold);
-    string lastDecision, position;
-    getInput("decision_in", lastDecision);
-
-    double kickDir = atan2(brain->data->ball.posToField.y, brain->data->ball.posToField.x + brain->config->fieldDimensions.length / 2);
-    double dir_rb_f = brain->data->robotBallAngleToField;
-    auto goalPostAngles = brain->getGoalPostAngles(0.3);
-    double theta_l = goalPostAngles[0]; 
-    double theta_r = goalPostAngles[1]; 
-    bool angleIsGood = (dir_rb_f > -M_PI / 2 && dir_rb_f < M_PI / 2);
-    double ballRange = brain->data->ball.range;
-    double ballYaw = brain->data->ball.yawToRobot;
-
-    string newDecision;
-    auto color = 0xFFFFFFFF; 
-    bool iKnowBallPos = brain->tree->getEntry<bool>("ball_location_known");
+    // 공 위치 신뢰 (아직 사용 X)
+    bool iKnowBallPos      = brain->tree->getEntry<bool>("ball_location_known");
     bool tmBallPosReliable = brain->tree->getEntry<bool>("tm_ball_pos_reliable");
-    if (!(iKnowBallPos || tmBallPosReliable))
-    {
-        newDecision = "find";
-        color = 0x0000FFFF;
+    bool ballKnown = (iKnowBallPos || tmBallPosReliable);
+
+    // 기본값: hold
+    string newDecision = "hold";
+    auto color = 0xFFFFFFFF;
+
+    // if (!ballKnown) {
+    //     newDecision = "find_ball";
+    //     color = 0x0000FFFF;
+    //     setOutput("decision_out", newDecision);
+    //     return NodeStatus::SUCCESS;
+    // }
+
+    // 위치들 (필드 좌표계)
+    auto bPos = brain->data->ball.posToField; 
+    auto gPos = brain->data->robotPoseToField; 
+    Pose2D ctPos;
+    ctPos.x = -4.5; ctPos.y = 0.0;
+
+    // 거리 계산
+    double distGKToBall   = norm(bPos.x - gPos.x, bPos.y - gPos.y);
+    double distBallToGoal = norm(bPos.x - ctPos.x, bPos.y - ctPos.y);
+
+    // 상대 수집
+    auto rPos = brain->data->getRobots();
+    double distOppToBallMin = 1e9; // 상대 로봇들 중에서 공에 가장 가까운 상대까지의 최소 거리
+    bool hasOpponent = false;
+    for (const auto& r : rPos) {
+        if (r.label != "Opponent") continue;
+        hasOpponent = true;
+        double d = norm(bPos.x - rPos.x, bPos.y - rPos.y);
+        if (d < distOppToBallMin) distOppToBallMin = d;
     }
-    else if (brain->data->ball.posToField.x > 0 - static_cast<double>(lastDecision == "retreat"))
-    {
-        newDecision = "retreat";
-        color = 0xFF00FFFF;
-    } else if (ballRange > chaseRangeThreshold * (lastDecision == "chase" ? 0.9 : 1.0))
-    {
-        newDecision = "chase";
+
+    // -----------------------------
+    // 파라미터(튜닝 포인트)
+    // -----------------------------
+    const double isolated_dist = 1.0;   // 골에서 이 거리보다 멀면 위험구역 밖 
+    const double isolated_y    = 1.0;   // |y|가 이보다 크면 외곽 
+    const double closer_margin      = 0.2;   // 내가 더 가깝다고 판정할 여유분
+    const double max_clear_run_dist = 1.0;   // 너무 멀면 골키퍼가 비우므로 clearing 금지
+
+    // -----------------------------
+    // 판정 기준
+    // -----------------------------
+    bool ballIsIsolated =
+        (distBallToGoal > isolated_dist) && // 공이 위험구역 밖에 있고
+        (fabs(bPos.y) > isolated_y) && // 공이 외곽에 있고
+        (distGKToBall < max_clear_run_dist); // 공이 골키퍼로부터 꽤 가까이 있다
+
+		// 공이 적보다 골키퍼와 가까이에 위치한다
+    bool iAmCloser = (!hasOpponent) ? true : (distGKToBall + closer_margin < distOppToBallMin); 
+
+    // -----------------------------
+    // 판정 결과
+    // -----------------------------
+    if (ballIsIsolated && iAmCloser) {
+        newDecision = "clearing";
         color = 0x00FF00FF;
-    }
-    else if (angleIsGood)
-    {
-        newDecision = "kick";
-        color = 0xFF0000FF;
-    }
-    else
-    {
-        newDecision = "adjust";
-        color = 0x00FFFFFF;
+    } else {
+        newDecision = "hold";
+        color = 0xFFFFFFFF;
     }
 
     setOutput("decision_out", newDecision);
-    brain->log->logToScreen("tree/Decide",
-                            format("Decision: %s ballrange: %.2f ballyaw: %.2f kickDir: %.2f rbDir: %.2f angleIsGood: %d", newDecision.c_str(), ballRange, ballYaw, kickDir, dir_rb_f, angleIsGood),
-                            color);
+
+    // brain->log->logToScreen(
+    //     "tree/GoalieDecide",
+    //     format("Decision:%s ballKnown:%d distGK2Ball:%.2f distBall2Goal:%.2f oppMin:%.2f isolated:%d closer:%d",
+    //            newDecision.c_str(), (int)ballKnown,
+    //            distGKToBall, distBallToGoal,
+    //            (hasOpponent ? distOppToBallMin : -1.0),
+    //            (int)ballIsIsolated, (int)iAmCloser),
+    //     color
+    // );
+    
+    // 간략한 로그
+    brain->log->logToScreen(
+        "tree/GoalieDecide",
+        format("Decision:%s",
+               newDecision.c_str(),)
+        color
+    );
     return NodeStatus::SUCCESS;
 }
+
 
 NodeStatus DefenderDecide::tick() {
     double chaseRangeThreshold;

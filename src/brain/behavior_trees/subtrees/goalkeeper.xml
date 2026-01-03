@@ -39,17 +39,17 @@
                         <GoalieDecide decision_out="{decision}" decision_in="{decision}" />   
                         <!-- 공 찾기 -->
                         <!--SubTree ID="FindBall" _while="decision=='find'" _autoremap="true" /-->
-                    </ReactiveSequence>
+                     </ReactiveSequence>
                     
-                    <Sequence _while="decision == 'hold'">
-		                    <CalcGoliePos/>
-		                    <GolieMove stop_threshold="0.1" v_limit="1.0"/>
-						  <Sequence/>
+                     <Sequence _while="decision == 'hold'">
+		                  <CalcGoliePos/>
+		                  <GolieMove stop_threshold="0.1" v_limit="1.0"/>
+						   <Sequence/>
 									  
-						  <Sequence _while="decision == 'clearing'">
-		                    <Chase vx_limit="0.9" vy_limit="0.2" vtheta_limit="1.0" dist="0.4" safe_dist="0.5" />
-								  <Kick speed_limit="1.0" min_msec_kick="300" msecs_stablize="100" kick_type="one_touch" />
-					 	  <Sequence/>
+						   <Sequence _while="decision == 'clearing'">
+		                  <Chase vx_limit="0.9" vy_limit="0.2" vtheta_limit="1.0" dist="0.4" safe_dist="0.5" />
+								<Kick speed_limit="1.0" min_msec_kick="300" msecs_stablize="100" kick_type="one_touch" />
+					 	   <Sequence/>
 									  
                   </Sequence>
                </ReactiveSequence>

@@ -96,7 +96,9 @@ NodeStatus GolieMove::tick(){
     double theta = atan2(vy, vx);
     double dist = norm(vx, vy);
     double Kp = 4.0;
-    double vtheta = toPInPI((theta - gtheta) + (targettheta - theta));
+    double vtheta;
+    if(dist > 1.5) vtheta = toPInPI(theta - gtheta);
+    else vtheta = toPInPI((theta - gtheta) + (targettheta - theta));
     vtheta *= Kp;
 
     // map 좌표계의 제어명령 vx,vy를 ego좌표계 제어명령으로 변환

@@ -44,7 +44,7 @@ brain_node:
       enable_freekick_avoid: false # freekick 중 장애물을 회피할지 여부
 
     locator:
-      min_marker_count: 5 # 로컬라이저 최소 마커 수
+      min_marker_count: 4 # 로컬라이저 최소 마커 수
       max_residual: 0.35 # 최대 잔차 (오차 허용값)
 
     communication:

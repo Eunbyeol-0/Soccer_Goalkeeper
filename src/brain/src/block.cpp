@@ -158,14 +158,15 @@ NodeStatus GolieInitPos::tick(){
     double Kp = 4.0;
     double linearFactor = 1.0 / (1.0 + exp(-6.0 * (dist - 0.5)));
 
-    if(dist > turn_Threshold){// 직진
+    // 수정
+    if(dist > turn_Threshold){ // 직진
       controlx = errorx*cos(gtheta) + errory*sin(gtheta);
       controly = -errorx*sin(gtheta) + errory*cos(gtheta);
       controlx *= linearFactor;
       controly *= linearFactor;
       controlx = cap(controlx, vxLimit, -vxLimit*0.5);    
       controly = cap(controly, vyLimit, -vyLimit);
-      controltheta = errortheta * Kp;
+      controltheta = toPInPI(errortheta * Kp);
     }
     else if(dist < turn_Threshold && dist > stop_Threshold){ // 선회
 		  controlx = errorx*cos(gtheta) + errory*sin(gtheta);
@@ -174,7 +175,7 @@ NodeStatus GolieInitPos::tick(){
       controly *= linearFactor;
       controlx = cap(controlx, vxLimit, -vxLimit*0.5);    
       controly = cap(controly, vyLimit, -vyLimit);
-	    controltheta = (targettheta - gtheta) * Kp; // 이러면 gtheta(로봇방향)이 targettheta를 바라봄
+	    controltheta = toPInPI((targettheta - gtheta) * Kp); // 이러면 gtheta(로봇방향)이 targettheta를 바라봄
     }
     
     else if(dist < turn_Threshold && dist < stop_Threshold){ // 정지

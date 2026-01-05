@@ -143,6 +143,7 @@ NodeStatus GoalieDecide::tick()
     string lastDecision;
     double ctPosx, ctPosy;
     double isolated_dist, isolated_y, closer_margin, max_clear_run_dist;
+    double clearingThreshold;
     getInput("decision_in", lastDecision); // 사용 X
     getInput("ctPosx", ctPosx);
     getInput("ctPosy", ctPosy);
@@ -150,6 +151,7 @@ NodeStatus GoalieDecide::tick()
     getInput("isolated_y", isolated_y);
     getInput("closer_margin", closer_margin);
     getInput("max_clear_run_dist", max_clear_run_dist);
+    getInput("clearing_threshold", clearingThreshold);
 
     // 공 위치 신뢰 (아직 사용 X)
     bool iKnowBallPos      = brain->tree->getEntry<bool>("ball_location_known");
@@ -174,6 +176,7 @@ NodeStatus GoalieDecide::tick()
     // 거리 계산
     double distGKToBall   = norm(bPos.x - gPos.x, bPos.y - gPos.y);
     double distBallToGoal = norm(bPos.x - ctPosx, bPos.y - ctPosy);
+    double distGKToGoal = norm(gPos.x - ctPosx, gPos.y - ctPosy);
 
     // 상대 수집
     auto rPos = brain->data->getRobots();
@@ -196,11 +199,12 @@ NodeStatus GoalieDecide::tick()
 
 		// 공이 적보다 골키퍼와 가까이에 위치한다
     bool iAmCloser = (!hasOpponent) ? true : (distGKToBall + closer_margin < distOppToBallMin); 
+    bool StopChasing = distGKToGoal > clearingThreshold;
 
     // -----------------------------
     // 판정 결과
     // -----------------------------
-    if (ballIsIsolated && iAmCloser) {
+    if (ballIsIsolated && iAmCloser && (!StopChasing)) {
         newDecision = "clearing";
         color = 0x00FF00FF;
     } else {
@@ -233,31 +237,14 @@ NodeStatus GoalieDecide::tick()
 NodeStatus GoalieClearingDecide::tick()
 {
     double chaseRangeThreshold;
-    double clearingThreshold;
     double ctPosx,ctPosy;
     auto color = 0xFFFFFFFF;
     getInput("chase_threshold", chaseRangeThreshold);
-    getInput("clearing_threshold", clearingThreshold);
     getInput("ctPosx", ctPosx);
     getInput("ctPosy", ctPosy);
 
     std::string lastDecision;
     getInput("decision_in", lastDecision);
-
-    // 범위 체크
-    auto gPos = brain->data->robotPoseToField;
-    double distFromGoalCenter = norm(gPos.x - ctPosx, gPos.y - ctPosy);
-
-    // 적당히 돌아왔으면 hold 복귀
-    if (distFromGoalCenter > clearingThreshold) {
-        setOutput("decision_out", std::string("hold"));
-        brain->log->logToScreen(
-            "tree/GoalieDecide",
-            format("Decision: hold"),
-            color
-        );
-        return NodeStatus::SUCCESS;
-    }
 
     auto ball = brain->data->ball;
     double ballRange = ball.range;
@@ -276,7 +263,7 @@ NodeStatus GoalieClearingDecide::tick()
     }
     
     brain->log->logToScreen(
-        "tree/GoalieDecide",
+        "tree/GoalieClearingDecide",
         format("Decision:%s",
         newDecision.c_str()),
         color

@@ -273,7 +273,7 @@ NodeStatus GoalieClearingDecide::tick()
     }
 
     auto ball = brain->data->ball;
-    double ballRange = ball.range;ol
+    double ballRange = ball.range;
     double ballYaw   = ball.yawToRobot;
 
     std::string newDecision;

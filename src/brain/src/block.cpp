@@ -71,11 +71,14 @@ NodeStatus GolieMove::tick(){
     double stop_Threshold;
     double vxLimit, vyLimit;
     double ctPosx, ctPosy;
+    double return_position_limit;
     getInput("stop_threshold", stop_Threshold); 
     getInput("vx_limit", vxLimit);
     getInput("vy_limit", vyLimit);
     getInput("ctPosx", ctPosx);
     getInput("ctPosy", ctPosy);
+    getInput("return_position_limit", return_position_limit);
+
     
 		auto rPos = brain->data->getRobots(); // 상대 위치
 		auto gPos = brain->data->robotPoseToField; // 본인 위치
@@ -97,7 +100,7 @@ NodeStatus GolieMove::tick(){
     double dist = norm(vx, vy);
     double Kp = 4.0;
     double vtheta;
-    if(dist > 1.5) vtheta = toPInPI(theta - gtheta);
+    if(dist > return_position_limit) vtheta = toPInPI(theta - gtheta);
     else vtheta = toPInPI((theta - gtheta) + (targettheta - theta));
     vtheta *= Kp;
 

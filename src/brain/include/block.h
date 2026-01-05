@@ -43,6 +43,8 @@ public:
             InputPort<double>("vy_limit", 0.35, "최대 속도"),
             InputPort<double>("ctPosx", -4.5, "골대중앙의 위치"),
             InputPort<double>("ctPosy", 0.0, "골대중앙의 위치"),
+            InputPort<double>("return_position_limit", 1.5, "이 이상 멀어지면 return 역할을 수행"),
+
         };
     }
 

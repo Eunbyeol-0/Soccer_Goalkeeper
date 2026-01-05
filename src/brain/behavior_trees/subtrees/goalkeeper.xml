@@ -40,11 +40,13 @@
                 <!-- <SubTree ID="FindBall" _while="decision=='find'" _autoremap="true" /> -->
               </ReactiveSequence>
 
+              <!--decision 1: hold-->
               <ReactiveSequence _while="decision == 'hold'">
                 <CalcGoliePos />
-                <GolieMove stop_threshold="0.1" v_limit="0.7" />
+                <GolieMove stop_threshold="0.1" vx_limit="0.7" vy_limit="0.35"/>
               </ReactiveSequence>
 
+              <!--decision 2: clearing-->
               <ReactiveSequence _while="decision == 'clearing'">
 	              <ReactiveSequence>
 		              <GoalieClearingDecide decision_out="{clearing_decision}" decision_in="{clearing_decision}" />

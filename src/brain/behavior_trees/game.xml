@@ -37,7 +37,7 @@
 
                         <ReactiveSequence _while="gc_game_state=='READY'" name="Ready">
                             <SubTree ID="CamFindAndTrackBall" _autoremap="true" /> 
-                            <GolieInitPos v_limit="0.6"/>
+                            <GolieInitPos vx_limit="0.6" vy_limit="0.4"/>
                             <SubTree ID="Locate" _autoremap="true" />
                         </ReactiveSequence>
 

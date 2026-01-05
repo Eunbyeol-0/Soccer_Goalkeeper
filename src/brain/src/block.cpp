@@ -19,17 +19,16 @@ NodeStatus CalcGoliePos::tick(){
 
 
 	  double blockThreshold; // 뭔가 새로운 이름이...
-    getInput("block_threshold", blockThreshold);
-
     double r;
+    double ctPosx, ctPosy;
+    getInput("block_threshold", blockThreshold);
     getInput("golie_radius", r);
+    getInput("ctPosx", ctPosx);
+    getInput("ctPosy", ctPosy);
     
     auto bPos = brain->data->ball.posToField; // 공 위치
 		
-		Pose2D ctPos; // 하드코딩된 골대중앙 위치
-		ctPos.x = -4.5; ctPos.y = 0.0;
-		
-		double cx = ctPos.x, cy = ctPos.y;
+		double cx = ctPosx, cy = ctPosy;
 		double bx = bPos.x, by = bPos.y;
 		
 		double dx = bx - cx; // 방향벡터
@@ -42,7 +41,7 @@ NodeStatus CalcGoliePos::tick(){
 		// "반원" 선택 로직 
 		if (ux < 0.0) {
     ux = -ux;
-    uy = -uy;
+    uy = uy;
 		}
 		
 		// 교점 계산
@@ -70,12 +69,13 @@ NodeStatus CalcGoliePos::tick(){
 
 NodeStatus GolieMove::tick(){
     double stop_Threshold;
-    double vLimit;
+    double vxLimit, vyLimit;
+    double ctPosx, ctPosy;
     getInput("stop_threshold", stop_Threshold); 
-    getInput("v_limit", vLimit);
-    
-    Pose2D ctPos;
-    ctPos.x = -4.5; ctPos.y = 0.0;
+    getInput("vx_limit", vxLimit);
+    getInput("vy_limit", vyLimit);
+    getInput("ctPosx", ctPosx);
+    getInput("ctPosy", ctPosy);
     
 		auto rPos = brain->data->getRobots(); // 상대 위치
 		auto gPos = brain->data->robotPoseToField; // 본인 위치
@@ -89,7 +89,7 @@ NodeStatus GolieMove::tick(){
     // 단순 P 제어
     double gx = gPos.x, gy = gPos.y, gtheta = gPos.theta;
 		double targetx = target.x, targety = target.y;
-		double targettheta = atan2((targety-ctPos.y),(targetx-ctPos.x));
+		double targettheta = atan2((targety-ctPosy),(targetx-ctPosx));
 		
     double vx = targetx - gx;
     double vy = targety - gy;
@@ -110,8 +110,8 @@ NodeStatus GolieMove::tick(){
     // double v = norm(vx, vy);
 
     // 속도 제한
-    controlx = cap(controlx, vLimit, -vLimit*0.5);    
-    controly = cap(controly, vLimit*0.5, -vLimit*0.5);
+    controlx = cap(controlx, vxLimit, -vxLimit*0.5);    
+    controly = cap(controly, vyLimit, -vyLimit);
 
     if (dist < stop_Threshold){
         controlx = 0;
@@ -126,10 +126,12 @@ NodeStatus GolieMove::tick(){
 NodeStatus GolieInitPos::tick(){
     double turn_Threshold;
     double stop_Threshold;
-    double vLimit;
+    double vxLimit;
+    double vyLimit;
     getInput("turn_threshold", turn_Threshold); 
     getInput("stop_threshold", stop_Threshold); 
-    getInput("v_limit", vLimit);
+    getInput("vx_limit", vxLimit);
+    getInput("vy_limit", vyLimit);
 
     // 골대중앙위치
     double targetx, targety, targettheta;
@@ -156,8 +158,8 @@ NodeStatus GolieInitPos::tick(){
       controly = -errorx*sin(gtheta) + errory*cos(gtheta);
       controlx *= linearFactor;
       controly *= linearFactor;
-      controlx = cap(controlx, vLimit, -vLimit*0.5);    
-      controly = cap(controly, vLimit*0.5, -vLimit*0.5);
+      controlx = cap(controlx, vxLimit, -vxLimit*0.5);    
+      controly = cap(controly, vyLimit, -vyLimit);
       controltheta = errortheta * Kp;
     }
     else if(dist < turn_Threshold && dist > stop_Threshold){ // 선회
@@ -165,8 +167,8 @@ NodeStatus GolieInitPos::tick(){
       controly = -errorx*sin(gtheta) + errory*cos(gtheta);
       controlx *= linearFactor;
       controly *= linearFactor;
-      controlx = cap(controlx, vLimit, -vLimit*0.5);    
-      controly = cap(controly, vLimit*0.5, -vLimit*0.5);
+      controlx = cap(controlx, vxLimit, -vxLimit*0.5);    
+      controly = cap(controly, vyLimit, -vyLimit);
 	    controltheta = (targettheta - gtheta) * Kp; // 이러면 gtheta(로봇방향)이 targettheta를 바라봄
     }
     

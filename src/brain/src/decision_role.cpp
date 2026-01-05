@@ -233,12 +233,10 @@ NodeStatus GoalieDecide::tick()
 NodeStatus GoalieClearingDecide::tick()
 {
     double chaseRangeThreshold;
-    double returnRangeThreshold;
     double clearingThreshold;
     double ctPosx,ctPosy;
     auto color = 0xFFFFFFFF;
     getInput("chase_threshold", chaseRangeThreshold);
-    getInput("return_threshold", returnRangeThreshold);
     getInput("clearing_threshold", clearingThreshold);
     getInput("ctPosx", ctPosx);
     getInput("ctPosy", ctPosy);
@@ -251,22 +249,11 @@ NodeStatus GoalieClearingDecide::tick()
     double distFromGoalCenter = norm(gPos.x - ctPosx, gPos.y - ctPosy);
 
     // 적당히 돌아왔으면 hold 복귀
-    if ((returnRangeThreshold > distFromGoalCenter)&&(distFromGoalCenter > clearingThreshold)) {
+    if (distFromGoalCenter > clearingThreshold) {
         setOutput("decision_out", std::string("hold"));
         brain->log->logToScreen(
             "tree/GoalieDecide",
             format("Decision: hold"),
-            color
-        );
-        return NodeStatus::SUCCESS;
-    }
-    
-    // 골대에서 너무 멀면 return
-    if (distFromGoalCenter > returnRangeThreshold) {
-        setOutput("decision_out", std::string("return"));
-        brain->log->logToScreen(
-            "tree/GoalieDecide",
-            format("Decision: return"),
             color
         );
         return NodeStatus::SUCCESS;

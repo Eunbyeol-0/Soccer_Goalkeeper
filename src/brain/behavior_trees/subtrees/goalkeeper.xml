@@ -56,10 +56,6 @@
                 <Kick _while="clearing_decision == 'clearing_kick'" speed_limit="0.7" min_msec_kick="300" msecs_stablize="100" kick_type="one_touch" />
               </ReactiveSequence>
 
-              <ReactiveSequence _while="clearing_decision == 'return'">
-                <GolieInitPos vx_limit="0.6" vy_limit="0.4"/>
-              </ReactiveSequence>
-
             </Sequence>
           </ReactiveSequence>
         </ReactiveSequence>

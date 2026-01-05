@@ -233,10 +233,12 @@ NodeStatus GoalieDecide::tick()
 NodeStatus GoalieClearingDecide::tick()
 {
     double chaseRangeThreshold;
+    double returnRangeThreshold;
     double clearingThreshold;
     double ctPosx,ctPosy;
     auto color = 0xFFFFFFFF;
     getInput("chase_threshold", chaseRangeThreshold);
+    getInput("return_threshold", returnRangeThreshold);
     getInput("clearing_threshold", clearingThreshold);
     getInput("ctPosx", ctPosx);
     getInput("ctPosy", ctPosy);
@@ -244,17 +246,34 @@ NodeStatus GoalieClearingDecide::tick()
     std::string lastDecision;
     getInput("decision_in", lastDecision);
 
-    // 1) clearing 범위 이탈 체크: 골문 중앙(-4.5, 0)에서 너무 멀어지면 hold로 복귀
+    // 범위 체크
     auto gPos = brain->data->robotPoseToField;
-
     double distFromGoalCenter = norm(gPos.x - ctPosx, gPos.y - ctPosy);
-    if (distFromGoalCenter > clearingThreshold) {
+
+    // 적당히 돌아왔으면 hold 복귀
+    if ((returnRangeThreshold > distFromGoalCenter)&&(distFromGoalCenter > clearingThreshold)) {
         setOutput("decision_out", std::string("hold"));
+        brain->log->logToScreen(
+            "tree/GoalieDecide",
+            format("Decision: hold"),
+            color
+        );
+        return NodeStatus::SUCCESS;
+    }
+    
+    // 골대에서 너무 멀면 return
+    if (distFromGoalCenter > returnRangeThreshold) {
+        setOutput("decision_out", std::string("return"));
+        brain->log->logToScreen(
+            "tree/GoalieDecide",
+            format("Decision: return"),
+            color
+        );
         return NodeStatus::SUCCESS;
     }
 
     auto ball = brain->data->ball;
-    double ballRange = ball.range;
+    double ballRange = ball.range;ol
     double ballYaw   = ball.yawToRobot;
 
     std::string newDecision;

@@ -38,9 +38,9 @@ NodeStatus CalcGoliePos::tick(){
 		double ux = dx / d; // 단위방향벡터
 		double uy = dy / d;
 		
-		// "반원" 선택 로직 
-		if (ux < 0.0) {
-    ux = -ux;
+		// "반원" 선택 로직... 반코트 기준 하드코딩이므로 나중에 수정필요
+		if (ux < 0.15) {
+    ux = cap(ux, 10.0, 0.15);
     uy = uy;
 		}
 		

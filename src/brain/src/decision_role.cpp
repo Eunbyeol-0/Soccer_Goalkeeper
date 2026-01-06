@@ -142,15 +142,14 @@ NodeStatus GoalieDecide::tick()
 {
     string lastDecision;
     double ctPosx, ctPosy;
-    double isolated_dist, isolated_y, closer_margin;
-    double clearingThreshold;
+    double clearing_min, closer_margin;
+    double clearing_max;
     getInput("decision_in", lastDecision); // 사용 X
     getInput("ctPosx", ctPosx);
     getInput("ctPosy", ctPosy);
-    getInput("isolated_dist", isolated_dist);
-    getInput("isolated_y", isolated_y);
+    getInput("clearing_min", clearing_min);
     getInput("closer_margin", closer_margin);
-    getInput("clearing_threshold", clearingThreshold);
+    getInput("clearing_max", clearing_max);
 
     // 공 위치 신뢰 (아직 사용 X)
     bool iKnowBallPos      = brain->tree->getEntry<bool>("ball_location_known");
@@ -191,19 +190,19 @@ NodeStatus GoalieDecide::tick()
     // -----------------------------
     // 판정 기준
     // -----------------------------
-    bool ballIsIsolated =
-        (distBallToGoal > isolated_dist) && // 공이 위험구역 밖에 있고
-        (fabs(bPos.y) > isolated_y) && // 공이 외곽에 있고
-        (distBallToGoal < clearingThreshold); // 공이 골대에서 너무 멀지도 않다
+    bool ballInClearingZone =
+        (distBallToGoal > clearing_min) && // 공이 위험구역 밖에 있고
+        (distBallToGoal < clearing_max); // 공이 골대에서 너무 멀지도 않다
 
-		// 공이 적보다 골키퍼와 가까이에 위치한다
+	// 공이 적보다 골키퍼와 가까이에 위치한다
     bool iAmCloser = (!hasOpponent) ? true : (distGKToBall + closer_margin < distOppToBallMin); 
-    bool StopChasing = distGKToGoal > clearingThreshold;
+    // 로봇이 골대로부터 너무 멀리 나가지 않도록
+    bool StopClearing = distGKToGoal > clearing_max;
 
     // -----------------------------
     // 판정 결과
     // -----------------------------
-    if (ballIsIsolated && iAmCloser && (!StopChasing)) {
+    if (ballInClearingZone && iAmCloser && (!StopClearing)) {
         newDecision = "clearing";
         color = 0x00FF00FF;
     } else {
@@ -219,7 +218,7 @@ NodeStatus GoalieDecide::tick()
     //            newDecision.c_str(), (int)ballKnown,
     //            distGKToBall, distBallToGoal,
     //            (hasOpponent ? distOppToBallMin : -1.0),
-    //            (int)ballIsIsolated, (int)iAmCloser),
+    //            (int)ballInClearingZone, (int)iAmCloser),
     //     color
     // );
     

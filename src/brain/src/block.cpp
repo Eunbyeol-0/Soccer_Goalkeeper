@@ -17,11 +17,8 @@ void RegisterBlockNodes(BT::BehaviorTreeFactory &factory, Brain* brain){
 
 NodeStatus CalcGoliePos::tick(){
 
-
-	  double blockThreshold; // 뭔가 새로운 이름이...
     double r;
     double ctPosx, ctPosy;
-    getInput("block_threshold", blockThreshold);
     getInput("golie_radius", r);
     getInput("ctPosx", ctPosx);
     getInput("ctPosy", ctPosy);
@@ -77,7 +74,7 @@ NodeStatus GolieMove::tick(){
     getInput("vy_limit", vyLimit);
     getInput("ctPosx", ctPosx);
     getInput("ctPosy", ctPosy);
-    getInput("return_position_limit", return_position_limit);
+    //getInput("return_position_limit", return_position_limit);
 
     
 		auto rPos = brain->data->getRobots(); // 상대 위치
@@ -100,8 +97,9 @@ NodeStatus GolieMove::tick(){
     double dist = norm(vx, vy);
     double Kp = 4.0;
     double vtheta;
-    if(dist > return_position_limit) vtheta = toPInPI(theta - gtheta);
-    else vtheta = toPInPI((theta - gtheta) + (targettheta - theta));
+    vtheta = toPInPI((theta - gtheta) + (targettheta - theta));
+    // if(dist > return_position_limit) vtheta = toPInPI(theta - gtheta);
+    // else vtheta = toPInPI((theta - gtheta) + (targettheta - theta));
     vtheta *= Kp;
 
     // map 좌표계의 제어명령 vx,vy를 ego좌표계 제어명령으로 변환

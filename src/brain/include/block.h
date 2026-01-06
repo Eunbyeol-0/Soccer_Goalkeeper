@@ -16,7 +16,6 @@ public:
     static PortsList providedPorts()
     {
         return {
-            InputPort<double>("block_threshold", 1.0, "골키퍼가 공을 막을지 찰지 결정"),
             InputPort<double>("golie_radius", 1.0, "골대 중앙을 기준으로 하는 반경"),
             InputPort<double>("ctPosx", -4.5, "골대중앙의 위치"),
             InputPort<double>("ctPosy", 0.0, "골대중앙의 위치"),
@@ -43,7 +42,7 @@ public:
             InputPort<double>("vy_limit", 0.35, "최대 속도"),
             InputPort<double>("ctPosx", -4.5, "골대중앙의 위치"),
             InputPort<double>("ctPosy", 0.0, "골대중앙의 위치"),
-            InputPort<double>("return_position_limit", 1.2, "이 이상 멀어지면 return 역할을 수행"),
+            //InputPort<double>("return_position_limit", 1.2, "이 이상 멀어지면 return 역할을 수행"),
 
         };
     }

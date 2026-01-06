@@ -49,7 +49,7 @@
               <!--decision 2: clearing-->
               <ReactiveSequence _while="decision == 'clearing'">
 	              <ReactiveSequence>
-		              <GoalieClearingDecide isolated_y = "0.5" decision_out="{clearing_decision}" decision_in="{clearing_decision}" />
+		              <GoalieClearingDecide decision_out="{clearing_decision}" decision_in="{clearing_decision}" />
 		            </ReactiveSequence>
 		            
                 <Chase _while="clearing_decision == 'clearing_chase'" vx_limit="0.5" vy_limit="0.1" vtheta_limit="1.0" dist="0.4" safe_dist="0.5" />

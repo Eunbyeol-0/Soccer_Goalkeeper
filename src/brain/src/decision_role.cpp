@@ -142,7 +142,7 @@ NodeStatus GoalieDecide::tick()
 {
     string lastDecision;
     double ctPosx, ctPosy;
-    double isolated_dist, isolated_y, closer_margin, max_clear_run_dist;
+    double isolated_dist, isolated_y, closer_margin;
     double clearingThreshold;
     getInput("decision_in", lastDecision); // 사용 X
     getInput("ctPosx", ctPosx);
@@ -150,7 +150,6 @@ NodeStatus GoalieDecide::tick()
     getInput("isolated_dist", isolated_dist);
     getInput("isolated_y", isolated_y);
     getInput("closer_margin", closer_margin);
-    getInput("max_clear_run_dist", max_clear_run_dist);
     getInput("clearing_threshold", clearingThreshold);
 
     // 공 위치 신뢰 (아직 사용 X)
@@ -195,7 +194,7 @@ NodeStatus GoalieDecide::tick()
     bool ballIsIsolated =
         (distBallToGoal > isolated_dist) && // 공이 위험구역 밖에 있고
         (fabs(bPos.y) > isolated_y) && // 공이 외곽에 있고
-        (distGKToBall < max_clear_run_dist); // 공이 골키퍼로부터 꽤 가까이 있다
+        (distBallToGoal < clearingThreshold); // 공이 골대에서 너무 멀지도 않다
 
 		// 공이 적보다 골키퍼와 가까이에 위치한다
     bool iAmCloser = (!hasOpponent) ? true : (distGKToBall + closer_margin < distOppToBallMin); 

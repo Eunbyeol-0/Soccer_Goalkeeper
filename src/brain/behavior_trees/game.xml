@@ -45,6 +45,8 @@
                             <SetVelocity x="0.0" y="0.0" theta="0.0" />
                             <SubTree ID="CamFindAndTrackBall" _autoremap="true" /> 
                             <SubTree ID="Locate" _autoremap="true" />
+                            <!--노드 검증용-->
+                            <PredictBallTraj/>
                         </ReactiveSequence>
 
                         <ReactiveSequence _while="gc_game_state=='PLAY'" name="Play">

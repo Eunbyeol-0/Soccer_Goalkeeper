@@ -403,13 +403,12 @@ NodeStatus PredictBallTraj::tick()
     // ===============================
     brain->log->setTimeNow();
 
-    // rerun Vector2D 타입을 명시해서 initializer_list 변환 문제를 피함
-    const rerun::components::Vector2D v_meas{mx, -my};
-    const rerun::components::Vector2D v_filt{x_, -y_};
-    const rerun::components::Vector2D v_pred{pred_x, -pred_y};
+    const rerun::components::Vector2D v_meas{mx, my};
+    const rerun::components::Vector2D v_filt{x_, y_};
+    const rerun::components::Vector2D v_pred{pred_x, pred_y};
 
     brain->log->log(
-        "robot/ball_meas",
+        "field/ball_meas",
         rerun::Arrows2D::from_vectors({v_meas})
             .with_origins({{0.0f, 0.0f}})
             .with_colors({0x00FF00FF})
@@ -418,7 +417,7 @@ NodeStatus PredictBallTraj::tick()
     );
 
     brain->log->log(
-        "robot/ball_filt",
+        "field/ball_filt",
         rerun::Arrows2D::from_vectors({v_filt})
             .with_origins({{0.0f, 0.0f}})
             .with_colors({0x00FFFFFF})
@@ -427,7 +426,7 @@ NodeStatus PredictBallTraj::tick()
     );
 
     brain->log->log(
-        "robot/ball_pred",
+        "field/ball_pred",
         rerun::Arrows2D::from_vectors({v_pred})
             .with_origins({{0.0f, 0.0f}})
             .with_colors({0xFFAA00FF})

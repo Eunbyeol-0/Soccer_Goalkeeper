@@ -190,35 +190,32 @@ NodeStatus GolieInitPos::tick(){
 NodeStatus PredictBallTraj::tick()
 {
     // ===============================
-    // 0) 초기값 
+    // 0) 초기값
     // ===============================
-    // 측정 노이즈 R (m^2) : 3cm 정도 흔들린다고 가정
-    const double R_meas = 9e-4; // (0.03)^2
-
-    // 가속도 노이즈 시그마 (m/s^2) : 상수속도 위반(가속/충돌/튐)
+    const double R_meas  = 9e-4;  // (0.03)^2
     const double sigma_a = 2.0;
 
-    // 초기 공분산 
-    const double P0_pos = 0.25; // (0.5m)^2
-    const double P0_vel = 1.0;  // (1m/s)^2
+    const double P0_pos = 0.25;  // (0.5m)^2
+    const double P0_vel = 1.0;   // (1m/s)^2
 
     // ===============================
     // 1) 측정값 (로봇 좌표계)
     // ===============================
-    double mx = brain->data->ball.posToRobot.x;
-    double my = brain->data->ball.posToRobot.y;
+    const double mx = brain->data->ball.posToRobot.x;
+    const double my = brain->data->ball.posToRobot.y;
 
     // ===============================
     // 2) 로봇 odom (절대값)
     // ===============================
-    double ox = brain->data->robotPoseToOdom.x;
-    double oy = brain->data->robotPoseToOdom.y;
-    double otheta = brain->data->robotPoseToOdom.theta;
+    const double ox = brain->data->robotPoseToOdom.x;
+    const double oy = brain->data->robotPoseToOdom.y;
+    const double otheta = brain->data->robotPoseToOdom.theta;
 
     // ===============================
     // 3) dt 계산
     // ===============================
-    auto now = brain->get_clock()->now();
+    const auto now = brain->get_clock()->now();
+
     double dt = 0.03;
     if (has_prev_time_) {
         dt = (now - prev_time_).seconds();
@@ -232,12 +229,13 @@ NodeStatus PredictBallTraj::tick()
     // ===============================
     double dx_r = 0.0, dy_r = 0.0, dtheta = 0.0;
     if (has_prev_odom_) {
-        double dx_o = ox - prev_ox_;
-        double dy_o = oy - prev_oy_;
-        dtheta = wrapToPi(otheta - prev_otheta_);
+        const double dx_o = ox - prev_ox_;
+        const double dy_o = oy - prev_oy_;
+        dtheta = toPInPI(otheta - prev_otheta_);
 
-        double c0 = cos(-prev_otheta_);
-        double s0 = sin(-prev_otheta_);
+        // odom 이동벡터를 "이전 로봇 좌표계(+x forward, +y left)"로 회전
+        const double c0 = std::cos(-prev_otheta_);
+        const double s0 = std::sin(-prev_otheta_);
 
         dx_r = c0 * dx_o - s0 * dy_o;
         dy_r = s0 * dx_o + c0 * dy_o;
@@ -249,11 +247,9 @@ NodeStatus PredictBallTraj::tick()
     // 5) KF 초기화
     // ===============================
     if (!kf_initialized_) {
-        // 상태: [x y vx vy]
         x_ = mx; y_ = my;
         vx_ = 0.0; vy_ = 0.0;
 
-        // 공분산 초기값
         for (int i = 0; i < 4; ++i)
             for (int j = 0; j < 4; ++j)
                 P_[i][j] = 0.0;
@@ -268,41 +264,30 @@ NodeStatus PredictBallTraj::tick()
     // ===============================
     // 6) 예측 단계 (CV + ego-motion)
     // ===============================
-    // 회전행렬 R(-dtheta)
-    double c = cos(-dtheta);
-    double s = sin(-dtheta);
+    const double c = std::cos(-dtheta);
+    const double s = std::sin(-dtheta);
 
-    // ----- 6-1) 상태 예측 -----
-    // 공 자체 CV 이동 + 로봇 이동 보정
-    double px = x_ + vx_ * dt - dx_r;
-    double py = y_ + vy_ * dt - dy_r;
+    // 6-1) 상태 예측
+    const double px = x_ + vx_ * dt - dx_r;
+    const double py = y_ + vy_ * dt - dy_r;
 
-    // 로봇 회전 보정
-    double x_pred = c * px - s * py;
-    double y_pred = s * px + c * py;
+    const double x_pred  = c * px - s * py;
+    const double y_pred  = s * px + c * py;
+    const double vx_pred = c * vx_ - s * vy_;
+    const double vy_pred = s * vx_ + c * vy_;
 
-    // 속도도 좌표계 회전만 적용
-    double vx_pred = c * vx_ - s * vy_;
-    double vy_pred = s * vx_ + c * vy_;
-
-    // ----- 6-2) 공분산 예측: P = F P F^T + Q -----
-    // F = [ R   R*dt
-    //       0    R ]
-    double F[4][4] = {
+    // 6-2) 공분산 예측: P = F P F^T + Q
+    const double F[4][4] = {
         { c, -s,  c*dt, -s*dt },
         { s,  c,  s*dt,  c*dt },
         { 0,  0,  c,    -s    },
         { 0,  0,  s,     c    }
     };
 
-    // Q = sigma_a^2 * [[dt^4/4, 0, dt^3/2, 0],
-    //                  [0, dt^4/4, 0, dt^3/2],
-    //                  [dt^3/2, 0, dt^2, 0],
-    //                  [0, dt^3/2, 0, dt^2]]
-    double sa2 = sigma_a * sigma_a;
-    double dt2 = dt * dt;
-    double dt3 = dt2 * dt;
-    double dt4 = dt2 * dt2;
+    const double sa2 = sigma_a * sigma_a;
+    const double dt2 = dt * dt;
+    const double dt3 = dt2 * dt;
+    const double dt4 = dt2 * dt2;
 
     double Q[4][4] = {0};
     Q[0][0] = sa2 * (dt4 * 0.25);
@@ -314,7 +299,6 @@ NodeStatus PredictBallTraj::tick()
     Q[2][2] = sa2 * (dt2);
     Q[3][3] = sa2 * (dt2);
 
-    // FP = F * P
     double FP[4][4] = {0};
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
@@ -324,7 +308,6 @@ NodeStatus PredictBallTraj::tick()
         }
     }
 
-    // P_pred = FP * F^T + Q
     double P_pred[4][4] = {0};
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
@@ -334,9 +317,8 @@ NodeStatus PredictBallTraj::tick()
         }
     }
 
-    // 예측값을 상태/공분산에 반영
-    x_  = x_pred;
-    y_  = y_pred;
+    x_ = x_pred;
+    y_ = y_pred;
     vx_ = vx_pred;
     vy_ = vy_pred;
 
@@ -345,49 +327,42 @@ NodeStatus PredictBallTraj::tick()
             P_[i][j] = P_pred[i][j];
 
     // ===============================
-    // 7) 업데이트 단계 
+    // 7) 업데이트 단계
     // ===============================
-    // H = [[1 0 0 0],
-    //      [0 1 0 0]]
-    // innovation r = y - Hx
-    double r0 = mx - x_;
-    double r1 = my - y_;
+    const double r0 = mx - x_;
+    const double r1 = my - y_;
 
-    // S = H P H^T + R  (2x2)
-    double S00 = P_[0][0] + R_meas;
-    double S01 = P_[0][1];
-    double S10 = P_[1][0];
-    double S11 = P_[1][1] + R_meas;
+    const double S00 = P_[0][0] + R_meas;
+    const double S01 = P_[0][1];
+    const double S10 = P_[1][0];
+    const double S11 = P_[1][1] + R_meas;
 
     double detS = S00 * S11 - S01 * S10;
-    if (fabs(detS) < 1e-12) detS = (detS >= 0 ? 1e-12 : -1e-12);
+    if (std::fabs(detS) < 1e-12) detS = (detS >= 0 ? 1e-12 : -1e-12);
 
-    double invS00 =  S11 / detS;
-    double invS01 = -S01 / detS;
-    double invS10 = -S10 / detS;
-    double invS11 =  S00 / detS;
+    const double invS00 =  S11 / detS;
+    const double invS01 = -S01 / detS;
+    const double invS10 = -S10 / detS;
+    const double invS11 =  S00 / detS;
 
-    // K = P H^T S^-1  (4x2)
-    double K00 = P_[0][0] * invS00 + P_[0][1] * invS10;
-    double K01 = P_[0][0] * invS01 + P_[0][1] * invS11;
+    const double K00 = P_[0][0] * invS00 + P_[0][1] * invS10;
+    const double K01 = P_[0][0] * invS01 + P_[0][1] * invS11;
 
-    double K10 = P_[1][0] * invS00 + P_[1][1] * invS10;
-    double K11 = P_[1][0] * invS01 + P_[1][1] * invS11;
+    const double K10 = P_[1][0] * invS00 + P_[1][1] * invS10;
+    const double K11 = P_[1][0] * invS01 + P_[1][1] * invS11;
 
-    double K20 = P_[2][0] * invS00 + P_[2][1] * invS10;
-    double K21 = P_[2][0] * invS01 + P_[2][1] * invS11;
+    const double K20 = P_[2][0] * invS00 + P_[2][1] * invS10;
+    const double K21 = P_[2][0] * invS01 + P_[2][1] * invS11;
 
-    double K30 = P_[3][0] * invS00 + P_[3][1] * invS10;
-    double K31 = P_[3][0] * invS01 + P_[3][1] * invS11;
+    const double K30 = P_[3][0] * invS00 + P_[3][1] * invS10;
+    const double K31 = P_[3][0] * invS01 + P_[3][1] * invS11;
 
-    // 상태 업데이트: x = x + K * r
     x_  += K00 * r0 + K01 * r1;
     y_  += K10 * r0 + K11 * r1;
     vx_ += K20 * r0 + K21 * r1;
     vy_ += K30 * r0 + K31 * r1;
 
-    // 공분산 업데이트: P = (I - K H) P
-    // H가 x,y만 관측하므로 (I-KH)는 아래 형태
+    // P = (I - K H) P
     double Pold[4][4];
     for (int i = 0; i < 4; ++i)
         for (int j = 0; j < 4; ++j)
@@ -415,44 +390,48 @@ NodeStatus PredictBallTraj::tick()
             P_[i][j] = Pnew[i][j];
 
     // ===============================
-    // 8) 미래 위치 예측 
+    // 8) 미래 위치 예측 (horizon)
     // ===============================
-    double horizon
+    double horizon = 0.3;
     getInput("horizon", horizon);
 
-    double pred_x = x_ + vx_ * horizon;
-    double pred_y = y_ + vy_ * horizon;
+    const double pred_x = x_ + vx_ * horizon;
+    const double pred_y = y_ + vy_ * horizon;
 
     // ===============================
-    // 9) 시각화
+    // 9) 시각화 (rerun)
     // ===============================
     brain->log->setTimeNow();
 
-    // 로봇 원점에서 측정 위치(초록), 필터 위치(하늘), 예측 위치(주황) 화살표
+    // rerun Vector2D 타입을 명시해서 initializer_list 변환 문제를 피함
+    const rerun::components::Vector2D v_meas{mx, -my};
+    const rerun::components::Vector2D v_filt{x_, -y_};
+    const rerun::components::Vector2D v_pred{pred_x, -pred_y};
+
     brain->log->log(
         "robot/ball_meas",
-        rerun::Arrows2D::from_vectors({{mx, -my}})
-            .with_origins({{0, 0}})
+        rerun::Arrows2D::from_vectors({v_meas})
+            .with_origins({{0.0f, 0.0f}})
             .with_colors({0x00FF00FF})
-            .with_radii(0.01)
+            .with_radii(0.01f)
             .with_draw_order(30)
     );
 
     brain->log->log(
         "robot/ball_filt",
-        rerun::Arrows2D::from_vectors({{x_, -y_}})
-            .with_origins({{0, 0}})
+        rerun::Arrows2D::from_vectors({v_filt})
+            .with_origins({{0.0f, 0.0f}})
             .with_colors({0x00FFFFFF})
-            .with_radii(0.01)
+            .with_radii(0.01f)
             .with_draw_order(31)
     );
 
     brain->log->log(
         "robot/ball_pred",
-        rerun::Arrows2D::from_vectors({{pred_x, -pred_y}})
-            .with_origins({{0, 0}})
+        rerun::Arrows2D::from_vectors({v_pred})
+            .with_origins({{0.0f, 0.0f}})
             .with_colors({0xFFAA00FF})
-            .with_radii(0.015)
+            .with_radii(0.015f)
             .with_draw_order(32)
     );
 

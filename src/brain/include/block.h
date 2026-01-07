@@ -92,5 +92,20 @@ public:
     NodeStatus tick() override;
 
 private:
+    // ----- 시간 dt 계산용 -----
+    bool has_prev_time_{false};
+    rclcpp::Time prev_time_{0, 0, RCL_ROS_TIME};
+
+    // ----- ego-motion 계산용(odom 이전값) -----
+    bool has_prev_odom_{false};
+    double prev_ox_{0.0};
+    double prev_oy_{0.0};
+    double prev_otheta_{0.0};
+
+    // ----- Kalman Filter 상태 -----
+    bool kf_initialized_{false};
+    double x_{0.0}, y_{0.0}, vx_{0.0}, vy_{0.0};
+    double P_[4][4]{};  // 0으로 초기화
+
     Brain *brain;
 };

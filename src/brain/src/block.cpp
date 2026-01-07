@@ -12,6 +12,7 @@ void RegisterBlockNodes(BT::BehaviorTreeFactory &factory, Brain* brain){
     REGISTER_BLOCK_BUILDER(CalcGoliePos)
     REGISTER_BLOCK_BUILDER(GolieMove)
     REGISTER_BLOCK_BUILDER(GolieInitPos)
+    REGISTER_BLOCK_BUILDER(PredictBallTraj)
 
 }
 
@@ -183,5 +184,277 @@ NodeStatus GolieInitPos::tick(){
     }
 
 		brain->client->setVelocity(controlx, controly, controltheta, false, false, false);
+    return NodeStatus::SUCCESS;
+}
+
+NodeStatus PredictBallTraj::tick()
+{
+    // ===============================
+    // 0) 초기값 
+    // ===============================
+    // 측정 노이즈 R (m^2) : 3cm 정도 흔들린다고 가정
+    const double R_meas = 9e-4; // (0.03)^2
+
+    // 가속도 노이즈 시그마 (m/s^2) : 상수속도 위반(가속/충돌/튐)
+    const double sigma_a = 2.0;
+
+    // 초기 공분산 
+    const double P0_pos = 0.25; // (0.5m)^2
+    const double P0_vel = 1.0;  // (1m/s)^2
+
+    // ===============================
+    // 1) 측정값 (로봇 좌표계)
+    // ===============================
+    double mx = brain->data->ball.posToRobot.x;
+    double my = brain->data->ball.posToRobot.y;
+
+    // ===============================
+    // 2) 로봇 odom (절대값)
+    // ===============================
+    double ox = brain->data->robotPoseToOdom.x;
+    double oy = brain->data->robotPoseToOdom.y;
+    double otheta = brain->data->robotPoseToOdom.theta;
+
+    // ===============================
+    // 3) dt 계산
+    // ===============================
+    auto now = brain->get_clock()->now();
+    double dt = 0.03;
+    if (has_prev_time_) {
+        dt = (now - prev_time_).seconds();
+        dt = std::clamp(dt, 1e-3, 0.2);
+    }
+    prev_time_ = now;
+    has_prev_time_ = true;
+
+    // ===============================
+    // 4) ego-motion 계산 (odom -> 이전 로봇좌표계 기준)
+    // ===============================
+    double dx_r = 0.0, dy_r = 0.0, dtheta = 0.0;
+    if (has_prev_odom_) {
+        double dx_o = ox - prev_ox_;
+        double dy_o = oy - prev_oy_;
+        dtheta = wrapToPi(otheta - prev_otheta_);
+
+        double c0 = cos(-prev_otheta_);
+        double s0 = sin(-prev_otheta_);
+
+        dx_r = c0 * dx_o - s0 * dy_o;
+        dy_r = s0 * dx_o + c0 * dy_o;
+    }
+    prev_ox_ = ox; prev_oy_ = oy; prev_otheta_ = otheta;
+    has_prev_odom_ = true;
+
+    // ===============================
+    // 5) KF 초기화
+    // ===============================
+    if (!kf_initialized_) {
+        // 상태: [x y vx vy]
+        x_ = mx; y_ = my;
+        vx_ = 0.0; vy_ = 0.0;
+
+        // 공분산 초기값
+        for (int i = 0; i < 4; ++i)
+            for (int j = 0; j < 4; ++j)
+                P_[i][j] = 0.0;
+
+        P_[0][0] = P_[1][1] = P0_pos;
+        P_[2][2] = P_[3][3] = P0_vel;
+
+        kf_initialized_ = true;
+        return NodeStatus::SUCCESS;
+    }
+
+    // ===============================
+    // 6) 예측 단계 (CV + ego-motion)
+    // ===============================
+    // 회전행렬 R(-dtheta)
+    double c = cos(-dtheta);
+    double s = sin(-dtheta);
+
+    // ----- 6-1) 상태 예측 -----
+    // 공 자체 CV 이동 + 로봇 이동 보정
+    double px = x_ + vx_ * dt - dx_r;
+    double py = y_ + vy_ * dt - dy_r;
+
+    // 로봇 회전 보정
+    double x_pred = c * px - s * py;
+    double y_pred = s * px + c * py;
+
+    // 속도도 좌표계 회전만 적용
+    double vx_pred = c * vx_ - s * vy_;
+    double vy_pred = s * vx_ + c * vy_;
+
+    // ----- 6-2) 공분산 예측: P = F P F^T + Q -----
+    // F = [ R   R*dt
+    //       0    R ]
+    double F[4][4] = {
+        { c, -s,  c*dt, -s*dt },
+        { s,  c,  s*dt,  c*dt },
+        { 0,  0,  c,    -s    },
+        { 0,  0,  s,     c    }
+    };
+
+    // Q = sigma_a^2 * [[dt^4/4, 0, dt^3/2, 0],
+    //                  [0, dt^4/4, 0, dt^3/2],
+    //                  [dt^3/2, 0, dt^2, 0],
+    //                  [0, dt^3/2, 0, dt^2]]
+    double sa2 = sigma_a * sigma_a;
+    double dt2 = dt * dt;
+    double dt3 = dt2 * dt;
+    double dt4 = dt2 * dt2;
+
+    double Q[4][4] = {0};
+    Q[0][0] = sa2 * (dt4 * 0.25);
+    Q[1][1] = sa2 * (dt4 * 0.25);
+    Q[0][2] = sa2 * (dt3 * 0.5);
+    Q[2][0] = sa2 * (dt3 * 0.5);
+    Q[1][3] = sa2 * (dt3 * 0.5);
+    Q[3][1] = sa2 * (dt3 * 0.5);
+    Q[2][2] = sa2 * (dt2);
+    Q[3][3] = sa2 * (dt2);
+
+    // FP = F * P
+    double FP[4][4] = {0};
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            double sum = 0.0;
+            for (int k = 0; k < 4; ++k) sum += F[i][k] * P_[k][j];
+            FP[i][j] = sum;
+        }
+    }
+
+    // P_pred = FP * F^T + Q
+    double P_pred[4][4] = {0};
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            double sum = 0.0;
+            for (int k = 0; k < 4; ++k) sum += FP[i][k] * F[j][k]; // F^T(k,j)=F(j,k)
+            P_pred[i][j] = sum + Q[i][j];
+        }
+    }
+
+    // 예측값을 상태/공분산에 반영
+    x_  = x_pred;
+    y_  = y_pred;
+    vx_ = vx_pred;
+    vy_ = vy_pred;
+
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 4; ++j)
+            P_[i][j] = P_pred[i][j];
+
+    // ===============================
+    // 7) 업데이트 단계 
+    // ===============================
+    // H = [[1 0 0 0],
+    //      [0 1 0 0]]
+    // innovation r = y - Hx
+    double r0 = mx - x_;
+    double r1 = my - y_;
+
+    // S = H P H^T + R  (2x2)
+    double S00 = P_[0][0] + R_meas;
+    double S01 = P_[0][1];
+    double S10 = P_[1][0];
+    double S11 = P_[1][1] + R_meas;
+
+    double detS = S00 * S11 - S01 * S10;
+    if (fabs(detS) < 1e-12) detS = (detS >= 0 ? 1e-12 : -1e-12);
+
+    double invS00 =  S11 / detS;
+    double invS01 = -S01 / detS;
+    double invS10 = -S10 / detS;
+    double invS11 =  S00 / detS;
+
+    // K = P H^T S^-1  (4x2)
+    double K00 = P_[0][0] * invS00 + P_[0][1] * invS10;
+    double K01 = P_[0][0] * invS01 + P_[0][1] * invS11;
+
+    double K10 = P_[1][0] * invS00 + P_[1][1] * invS10;
+    double K11 = P_[1][0] * invS01 + P_[1][1] * invS11;
+
+    double K20 = P_[2][0] * invS00 + P_[2][1] * invS10;
+    double K21 = P_[2][0] * invS01 + P_[2][1] * invS11;
+
+    double K30 = P_[3][0] * invS00 + P_[3][1] * invS10;
+    double K31 = P_[3][0] * invS01 + P_[3][1] * invS11;
+
+    // 상태 업데이트: x = x + K * r
+    x_  += K00 * r0 + K01 * r1;
+    y_  += K10 * r0 + K11 * r1;
+    vx_ += K20 * r0 + K21 * r1;
+    vy_ += K30 * r0 + K31 * r1;
+
+    // 공분산 업데이트: P = (I - K H) P
+    // H가 x,y만 관측하므로 (I-KH)는 아래 형태
+    double Pold[4][4];
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 4; ++j)
+            Pold[i][j] = P_[i][j];
+
+    double IKH[4][4] = {0};
+    for (int i = 0; i < 4; ++i) IKH[i][i] = 1.0;
+
+    IKH[0][0] -= K00; IKH[0][1] -= K01;
+    IKH[1][0] -= K10; IKH[1][1] -= K11;
+    IKH[2][0] -= K20; IKH[2][1] -= K21;
+    IKH[3][0] -= K30; IKH[3][1] -= K31;
+
+    double Pnew[4][4] = {0};
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            double sum = 0.0;
+            for (int k = 0; k < 4; ++k) sum += IKH[i][k] * Pold[k][j];
+            Pnew[i][j] = sum;
+        }
+    }
+
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 4; ++j)
+            P_[i][j] = Pnew[i][j];
+
+    // ===============================
+    // 8) 미래 위치 예측 
+    // ===============================
+    double horizon
+    getInput("horizon", horizon);
+
+    double pred_x = x_ + vx_ * horizon;
+    double pred_y = y_ + vy_ * horizon;
+
+    // ===============================
+    // 9) 시각화
+    // ===============================
+    brain->log->setTimeNow();
+
+    // 로봇 원점에서 측정 위치(초록), 필터 위치(하늘), 예측 위치(주황) 화살표
+    brain->log->log(
+        "robot/ball_meas",
+        rerun::Arrows2D::from_vectors({{mx, -my}})
+            .with_origins({{0, 0}})
+            .with_colors({0x00FF00FF})
+            .with_radii(0.01)
+            .with_draw_order(30)
+    );
+
+    brain->log->log(
+        "robot/ball_filt",
+        rerun::Arrows2D::from_vectors({{x_, -y_}})
+            .with_origins({{0, 0}})
+            .with_colors({0x00FFFFFF})
+            .with_radii(0.01)
+            .with_draw_order(31)
+    );
+
+    brain->log->log(
+        "robot/ball_pred",
+        rerun::Arrows2D::from_vectors({{pred_x, -pred_y}})
+            .with_origins({{0, 0}})
+            .with_colors({0xFFAA00FF})
+            .with_radii(0.015)
+            .with_draw_order(32)
+    );
+
     return NodeStatus::SUCCESS;
 }

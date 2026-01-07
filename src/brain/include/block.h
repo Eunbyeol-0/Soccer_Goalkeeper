@@ -76,3 +76,21 @@ public:
 private:
     Brain *brain;
 };
+
+class PredictBallTraj : public SyncActionNode
+{
+public:
+    PredictBallTraj(const string &name, const NodeConfig &config, Brain *_brain) : SyncActionNode(name, config), brain(_brain) {}
+
+    static PortsList providedPorts()
+    {
+        return {
+            InputPort<double>("horizon", 1.0, "horizen초 뒤의 공을 예측"),
+        };
+    }
+
+    NodeStatus tick() override;
+
+private:
+    Brain *brain;
+};

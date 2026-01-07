@@ -403,14 +403,17 @@ NodeStatus PredictBallTraj::tick()
     // ===============================
     brain->log->setTimeNow();
 
-    const rerun::components::Vector2D v_meas{mx, my};
-    const rerun::components::Vector2D v_filt{x_, y_};
-    const rerun::components::Vector2D v_pred{pred_x, pred_y};
+    auto gPos = brain->data->robotPoseToField;
+    double gx = gPos.x, gy = gPos.y, gtheta = gPos.theta;
+
+    const rerun::components::Vector2D v_meas{mx, -my};
+    const rerun::components::Vector2D v_filt{x_, -y_};
+    const rerun::components::Vector2D v_pred{pred_x, -pred_y};
 
     brain->log->log(
         "field/ball_meas",
         rerun::Arrows2D::from_vectors({v_meas})
-            .with_origins({{0.0f, 0.0f}})
+            .with_origins({{gx, gy}})
             .with_colors({0x00FF00FF})
             .with_radii(0.01f)
             .with_draw_order(30)
@@ -419,7 +422,7 @@ NodeStatus PredictBallTraj::tick()
     brain->log->log(
         "field/ball_filt",
         rerun::Arrows2D::from_vectors({v_filt})
-            .with_origins({{0.0f, 0.0f}})
+            .with_origins({{gx, gy}})
             .with_colors({0x00FFFFFF})
             .with_radii(0.01f)
             .with_draw_order(31)
@@ -428,7 +431,7 @@ NodeStatus PredictBallTraj::tick()
     brain->log->log(
         "field/ball_pred",
         rerun::Arrows2D::from_vectors({v_pred})
-            .with_origins({{0.0f, 0.0f}})
+            .with_origins({{gx, gy}})
             .with_colors({0xFFAA00FF})
             .with_radii(0.015f)
             .with_draw_order(32)

@@ -85,7 +85,11 @@ public:
     static PortsList providedPorts()
     {
         return {
-            InputPort<double>("horizon", 1.0, "horizen초 뒤의 공을 예측"),
+            InputPort<double>("R_meas", 9e-4, "measurement noise (R)"), //(0.03)^2
+            InputPort<double>("sigma_a", 2.0, "proccess noise (Q)"),
+            InputPort<double>("P0_pos", 0.25, "위치 공분산의 초기값"), // (0.5m)^2
+            InputPort<double>("P0_vel", 1.0, "속도 공분산의 초기값"), // (1m/s)^2
+            InputPort<double>("horizon", 0.5, "horizen초 뒤의 공을 예측"),
         };
     }
 

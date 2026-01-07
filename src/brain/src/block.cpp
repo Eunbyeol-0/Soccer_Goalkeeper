@@ -192,11 +192,15 @@ NodeStatus PredictBallTraj::tick()
     // ===============================
     // 0) 초기값
     // ===============================
-    const double R_meas  = 9e-4;  // (0.03)^2
-    const double sigma_a = 2.0;
-
-    const double P0_pos = 0.25;  // (0.5m)^2
-    const double P0_vel = 1.0;   // (1m/s)^2
+    const double R_meas;  // measurement noise (R)
+    const double sigma_a;  // proccess noise (Q)
+    const double P0_pos;  
+    const double P0_vel;  
+ 
+    getInput("R_meas", R_meas);
+    getInput("sigma_a", sigma_a);
+    getInput("P0_pos", P0_pos);
+    getInput("P0_vel", P0_vel);
 
     // ===============================
     // 1) 측정값 (로봇 좌표계)
@@ -392,7 +396,7 @@ NodeStatus PredictBallTraj::tick()
     // ===============================
     // 8) 미래 위치 예측 (horizon)
     // ===============================
-    double horizon = 0.3;
+    double horizon;
     getInput("horizon", horizon);
 
     const double pred_x = x_ + vx_ * horizon;
@@ -406,13 +410,13 @@ NodeStatus PredictBallTraj::tick()
     auto gPos = brain->data->robotPoseToField;
     double gx = gPos.x, gy = gPos.y, gtheta = gPos.theta;
 
-    const rerun::components::Vector2D v_meas{mx, -my};
-    const rerun::components::Vector2D v_filt{x_, -y_};
-    const rerun::components::Vector2D v_pred{pred_x, -pred_y};
+    const rerun::components::Vector2D measured_ball{mx, -my};
+    const rerun::components::Vector2D filtered_ball{x_, -y_};
+    const rerun::components::Vector2D predicted_ball{pred_x, -pred_y};
 
     brain->log->log(
-        "field/ball_meas",
-        rerun::Arrows2D::from_vectors({v_meas})
+        "field/measured_ball", // 측정된 공의 위치
+        rerun::Arrows2D::from_vectors({measured_ball})
             .with_origins({{gx, gy}})
             .with_colors({0x00FF00FF})
             .with_radii(0.01f)
@@ -420,8 +424,8 @@ NodeStatus PredictBallTraj::tick()
     );
 
     brain->log->log(
-        "field/ball_filt",
-        rerun::Arrows2D::from_vectors({v_filt})
+        "field/filtered_ball", // 필터 추정된 공의 위치 
+        rerun::Arrows2D::from_vectors({filtered_ball})
             .with_origins({{gx, gy}})
             .with_colors({0x00FFFFFF})
             .with_radii(0.01f)
@@ -429,8 +433,8 @@ NodeStatus PredictBallTraj::tick()
     );
 
     brain->log->log(
-        "field/ball_pred",
-        rerun::Arrows2D::from_vectors({v_pred})
+        "field/predicted_ball", // 예측된 공의 위치
+        rerun::Arrows2D::from_vectors({predicted_ball})
             .with_origins({{gx, gy}})
             .with_colors({0xFFAA00FF})
             .with_radii(0.015f)

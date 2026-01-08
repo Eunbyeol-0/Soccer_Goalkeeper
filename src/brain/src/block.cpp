@@ -24,7 +24,8 @@ NodeStatus CalcGoliePos::tick(){
     getInput("ctPosx", ctPosx);
     getInput("ctPosy", ctPosy);
     
-    auto bPos = brain->data->ball.posToField; // 공 위치
+    // auto bPos = brain->data->ball.posToField; // 공 위치
+    auto bPos = robot2field(brain->data->Pred_ball);
 		
 		double cx = ctPosx, cy = ctPosy;
 		double bx = bPos.x, by = bPos.y;
@@ -401,6 +402,11 @@ NodeStatus PredictBallTraj::tick()
 
     const double pred_x = x_ + vx_ * horizon;
     const double pred_y = y_ + vy_ * horizon;
+
+	// Pose2D로의 변환 및 저장
+	Pose2D Pred_ball;
+	Pred_ball.x = pred_x; Pred_ball.y = pred_y;  
+	brain->data->Pred_ball = Pred_ball;
 
     // ===============================
     // 9) 시각화 (rerun)

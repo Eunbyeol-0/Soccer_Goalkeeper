@@ -42,6 +42,8 @@
 
               <!--decision 1: hold-->
               <ReactiveSequence _while="decision == 'hold'">
+                <!--검증용-->
+                <PredictBallTraj R_meas="0.01" sigma_a="1.5" horizon="0.5"/>
                 <CalcGoliePos />
                 <GolieMove stop_threshold="0.1" vx_limit="0.7" vy_limit="0.35"/>
               </ReactiveSequence>

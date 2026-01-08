@@ -389,10 +389,9 @@ NodeStatus PredictBallTraj::tick()
     // ===============================
     brain->log->setTimeNow();
 
-    // 필드 좌표에서 "원점 -> 공 위치" 벡터로 표시 (직관적)
-    const rerun::components::Vector2D measured_ball{(float)mx, (float)(-my)};
-    const rerun::components::Vector2D filtered_ball{(float)x_, (float)(-y_)};
-    const rerun::components::Vector2D predicted_ball{(float)pred_x, (float)(-pred_y)};
+    const rerun::components::Vector2D measured_ball{(float)mx-4.5, (float)(-my)};
+    const rerun::components::Vector2D filtered_ball{(float)x_-4.5, (float)(-y_)};
+    const rerun::components::Vector2D predicted_ball{(float)pred_x-4.5, (float)(-pred_y)};
 
     brain->log->log(
         "field/measured_ball",

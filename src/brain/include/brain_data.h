@@ -56,8 +56,8 @@ struct BrainData {
     VisionBox visionBox; 
     
     /* ---------------------------------------------------------------------------- 로봇 위치 관련 파라미터 -------------------------------------------------------------------- */
-    Pose2D GoliePos; // 키퍼 전용
-    Pose2D Pred_ball;
+    Pose2D GoliePos; // 키퍼 목표 위치
+    Pose2D Pred_ball; // 예측된 공의 위치
     Pose2D robotPoseToField;
     Pose2D odomToField;      
     Pose2D robotPoseToOdom;  

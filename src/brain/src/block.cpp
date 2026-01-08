@@ -25,22 +25,30 @@ NodeStatus CalcGoliePos::tick(){
     getInput("ctPosy", ctPosy);
     
     // auto bPos = brain->data->ball.posToField; // 공 위치
-    auto bPos = robot2field(brain->data->Pred_ball);
+    auto bbPos = brain->data->Pred_ball;
+    Pose2D ballRobot;
+    ballRobot.x = bbPos.x;
+    ballRobot.y = bbPos.y;
+    ballRobot.theta = 0.0;
+    Pose2D ballFieldPose = brain->data->robot2field(ballRobot);
+    auto bPos = brain->data->Pred_ball;
+    bPos.x=ballFieldPose.x;
+    bPos.y=ballFieldPose.y;
+
+	double cx = ctPosx, cy = ctPosy;
+	double bx = bPos.x, by = bPos.y;
 		
-		double cx = ctPosx, cy = ctPosy;
-		double bx = bPos.x, by = bPos.y;
+	double dx = bx - cx; // 방향벡터
+	double dy = by - cy;
+	double d = norm(dx, dy);
 		
-		double dx = bx - cx; // 방향벡터
-		double dy = by - cy;
-		double d = norm(dx, dy);
-		
-		double ux = dx / d; // 단위방향벡터
-		double uy = dy / d;
+	double ux = dx / d; // 단위방향벡터
+	double uy = dy / d;
 		
 		// "반원" 선택 로직... 반코트 기준 하드코딩이므로 나중에 수정필요
 		if (ux < 0.15) {
-    ux = cap(ux, 10.0, 0.15);
-    uy = uy;
+            ux = cap(ux, 10.0, 0.15);
+            uy = uy;
 		}
 		
 		// 교점 계산
@@ -193,10 +201,10 @@ NodeStatus PredictBallTraj::tick()
     // ===============================
     // 0) 초기값
     // ===============================
-    const double R_meas;  // measurement noise (R)
-    const double sigma_a;  // proccess noise (Q)
-    const double P0_pos;  
-    const double P0_vel;  
+    double R_meas;  // measurement noise (R)
+    double sigma_a;  // proccess noise (Q)
+    double P0_pos;  
+    double P0_vel;  
  
     getInput("R_meas", R_meas);
     getInput("sigma_a", sigma_a);

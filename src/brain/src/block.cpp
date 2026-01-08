@@ -24,16 +24,7 @@ NodeStatus CalcGoliePos::tick(){
     getInput("ctPosx", ctPosx);
     getInput("ctPosy", ctPosy);
     
-    // auto bPos = brain->data->ball.posToField; // 공 위치
-    auto bbPos = brain->data->Pred_ball;
-    Pose2D ballRobot;
-    ballRobot.x = bbPos.x;
-    ballRobot.y = bbPos.y;
-    ballRobot.theta = 0.0;
-    Pose2D ballFieldPose = brain->data->robot2field(ballRobot);
-    auto bPos = brain->data->Pred_ball;
-    bPos.x=ballFieldPose.x;
-    bPos.y=ballFieldPose.y;
+    auto bPos = brain->data->ball.posToField; // 공 위치
 
 	double cx = ctPosx, cy = ctPosy;
 	double bx = bPos.x, by = bPos.y;

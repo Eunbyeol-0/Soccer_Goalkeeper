@@ -190,33 +190,27 @@ NodeStatus GolieInitPos::tick(){
 NodeStatus PredictBallTraj::tick()
 {
     // ===============================
-    // 0) 초기값
+    // 0) 초기값 (포트에서 튜닝)
     // ===============================
-    double R_meas;  // measurement noise (R)
-    double sigma_a;  // proccess noise (Q)
-    double P0_pos;  
-    double P0_vel;  
- 
-    getInput("R_meas", R_meas);
+    double R_meas;    // measurement noise (R): [m^2]
+    double sigma_a;   // process noise (Q)용 가속도 표준편차: [m/s^2]
+    double P0_pos;    // 초기 위치 분산
+    double P0_vel;    // 초기 속도 분산
+
+    getInput("R_meas",  R_meas);
     getInput("sigma_a", sigma_a);
-    getInput("P0_pos", P0_pos);
-    getInput("P0_vel", P0_vel);
+    getInput("P0_pos",  P0_pos);
+    getInput("P0_vel",  P0_vel);
 
     // ===============================
-    // 1) 측정값 (로봇 좌표계)
+    // 1) 측정값 (필드 좌표계) 
     // ===============================
-    const double mx = brain->data->ball.posToRobot.x;
-    const double my = brain->data->ball.posToRobot.y;
+    auto bPos = brain->data->ball.posToField;
+    const double mx = bPos.x;   
+    const double my = bPos.y;   
 
     // ===============================
-    // 2) 로봇 odom (절대값)
-    // ===============================
-    const double ox = brain->data->robotPoseToOdom.x;
-    const double oy = brain->data->robotPoseToOdom.y;
-    const double otheta = brain->data->robotPoseToOdom.theta;
-
-    // ===============================
-    // 3) dt 계산
+    // 2) dt 계산 (tick 기반 유지)
     // ===============================
     const auto now = brain->get_clock()->now();
 
@@ -229,28 +223,10 @@ NodeStatus PredictBallTraj::tick()
     has_prev_time_ = true;
 
     // ===============================
-    // 4) ego-motion 계산 (odom -> 이전 로봇좌표계 기준)
-    // ===============================
-    double dx_r = 0.0, dy_r = 0.0, dtheta = 0.0;
-    if (has_prev_odom_) {
-        const double dx_o = ox - prev_ox_;
-        const double dy_o = oy - prev_oy_;
-        dtheta = toPInPI(otheta - prev_otheta_);
-
-        // odom 이동벡터를 "이전 로봇 좌표계(+x forward, +y left)"로 회전
-        const double c0 = std::cos(-prev_otheta_);
-        const double s0 = std::sin(-prev_otheta_);
-
-        dx_r = c0 * dx_o - s0 * dy_o;
-        dy_r = s0 * dx_o + c0 * dy_o;
-    }
-    prev_ox_ = ox; prev_oy_ = oy; prev_otheta_ = otheta;
-    has_prev_odom_ = true;
-
-    // ===============================
-    // 5) KF 초기화
+    // 3) KF 초기화
     // ===============================
     if (!kf_initialized_) {
+        // 상태: [x y vx vy]  
         x_ = mx; y_ = my;
         vx_ = 0.0; vy_ = 0.0;
 
@@ -266,26 +242,20 @@ NodeStatus PredictBallTraj::tick()
     }
 
     // ===============================
-    // 6) 예측 단계 (CV + ego-motion)
+    // 4) 예측 단계 (CV: 필드 좌표계)
     // ===============================
-    const double c = std::cos(-dtheta);
-    const double s = std::sin(-dtheta);
-
     // 6-1) 상태 예측
-    const double px = x_ + vx_ * dt - dx_r;
-    const double py = y_ + vy_ * dt - dy_r;
-
-    const double x_pred  = c * px - s * py;
-    const double y_pred  = s * px + c * py;
-    const double vx_pred = c * vx_ - s * vy_;
-    const double vy_pred = s * vx_ + c * vy_;
+    const double x_pred  = x_ + vx_ * dt;
+    const double y_pred  = y_ + vy_ * dt;
+    const double vx_pred = vx_;
+    const double vy_pred = vy_;
 
     // 6-2) 공분산 예측: P = F P F^T + Q
     const double F[4][4] = {
-        { c, -s,  c*dt, -s*dt },
-        { s,  c,  s*dt,  c*dt },
-        { 0,  0,  c,    -s    },
-        { 0,  0,  s,     c    }
+        { 1, 0,  dt, 0  },
+        { 0, 1,  0,  dt },
+        { 0, 0,  1,  0  },
+        { 0, 0,  0,  1  }
     };
 
     const double sa2 = sigma_a * sigma_a;
@@ -303,6 +273,7 @@ NodeStatus PredictBallTraj::tick()
     Q[2][2] = sa2 * (dt2);
     Q[3][3] = sa2 * (dt2);
 
+    // FP = F * P
     double FP[4][4] = {0};
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
@@ -312,6 +283,7 @@ NodeStatus PredictBallTraj::tick()
         }
     }
 
+    // P_pred = FP * F^T + Q
     double P_pred[4][4] = {0};
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
@@ -321,8 +293,9 @@ NodeStatus PredictBallTraj::tick()
         }
     }
 
-    x_ = x_pred;
-    y_ = y_pred;
+    // 예측값 반영
+    x_  = x_pred;
+    y_  = y_pred;
     vx_ = vx_pred;
     vy_ = vy_pred;
 
@@ -331,11 +304,12 @@ NodeStatus PredictBallTraj::tick()
             P_[i][j] = P_pred[i][j];
 
     // ===============================
-    // 7) 업데이트 단계
+    // 5) 업데이트 단계 
     // ===============================
     const double r0 = mx - x_;
     const double r1 = my - y_;
 
+    // S = H P H^T + R  (2x2), R = diag(R_meas, R_meas)
     const double S00 = P_[0][0] + R_meas;
     const double S01 = P_[0][1];
     const double S10 = P_[1][0];
@@ -349,6 +323,7 @@ NodeStatus PredictBallTraj::tick()
     const double invS10 = -S10 / detS;
     const double invS11 =  S00 / detS;
 
+    // K = P H^T S^-1 (4x2) : P의 첫 두 열만 사용
     const double K00 = P_[0][0] * invS00 + P_[0][1] * invS10;
     const double K01 = P_[0][0] * invS01 + P_[0][1] * invS11;
 
@@ -361,12 +336,13 @@ NodeStatus PredictBallTraj::tick()
     const double K30 = P_[3][0] * invS00 + P_[3][1] * invS10;
     const double K31 = P_[3][0] * invS01 + P_[3][1] * invS11;
 
+    // 상태 업데이트
     x_  += K00 * r0 + K01 * r1;
     y_  += K10 * r0 + K11 * r1;
     vx_ += K20 * r0 + K21 * r1;
     vy_ += K30 * r0 + K31 * r1;
 
-    // P = (I - K H) P
+    // 공분산 업데이트: P = (I - K H) P
     double Pold[4][4];
     for (int i = 0; i < 4; ++i)
         for (int j = 0; j < 4; ++j)
@@ -394,53 +370,52 @@ NodeStatus PredictBallTraj::tick()
             P_[i][j] = Pnew[i][j];
 
     // ===============================
-    // 8) 미래 위치 예측 (horizon)
+    // 6) 미래 위치 예측 (horizon)
     // ===============================
-    double horizon;
+    double horizon = 0.5;
     getInput("horizon", horizon);
 
     const double pred_x = x_ + vx_ * horizon;
     const double pred_y = y_ + vy_ * horizon;
 
-	// Pose2D로의 변환 및 저장
-	Pose2D Pred_ball;
-	Pred_ball.x = pred_x; Pred_ball.y = pred_y;  
-	brain->data->Pred_ball = Pred_ball;
+    // Pose2D로 변환 및 저장 (필드 좌표계)
+    Pose2D Pred_ball;
+    Pred_ball.x = pred_x;
+    Pred_ball.y = pred_y;
+    brain->data->Pred_ball = Pred_ball;
 
     // ===============================
-    // 9) 시각화 (rerun)
+    // 7) 시각화 (rerun) - 필드 좌표계
     // ===============================
     brain->log->setTimeNow();
 
-    auto gPos = brain->data->robotPoseToField;
-    double gx = gPos.x, gy = gPos.y, gtheta = gPos.theta;
-
-    const rerun::components::Vector2D measured_ball{mx, -my};
-    const rerun::components::Vector2D filtered_ball{x_, -y_};
-    const rerun::components::Vector2D predicted_ball{pred_x, -pred_y};
+    // 필드 좌표에서 "원점 -> 공 위치" 벡터로 표시 (직관적)
+    const rerun::components::Vector2D measured_ball{(float)mx, (float)(-my)};
+    const rerun::components::Vector2D filtered_ball{(float)x_, (float)(-y_)};
+    const rerun::components::Vector2D predicted_ball{(float)pred_x, (float)(-pred_y)};
 
     brain->log->log(
-        "field/measured_ball", // 측정된 공의 위치
+        "field/measured_ball",
         rerun::Arrows2D::from_vectors({measured_ball})
-            .with_origins({{gx, gy}})
+            .with_origins({{-4.5, 0.0}})
             .with_colors({0x00FF00FF})
             .with_radii(0.01f)
             .with_draw_order(30)
     );
 
     brain->log->log(
-        "field/filtered_ball", // 필터 추정된 공의 위치 
+        "field/filtered_ball",
         rerun::Arrows2D::from_vectors({filtered_ball})
-            .with_origins({{gx, gy}})
+            .with_origins({{-4.5, 0.0}})
             .with_colors({0x00FFFFFF})
             .with_radii(0.01f)
             .with_draw_order(31)
     );
 
     brain->log->log(
-        "field/predicted_ball", // 예측된 공의 위치
+        "field/predicted_ball",
         rerun::Arrows2D::from_vectors({predicted_ball})
-            .with_origins({{gx, gy}})
+            .with_origins({{-4.5, 0.0}})
             .with_colors({0xFFAA00FF})
             .with_radii(0.015f)
             .with_draw_order(32)

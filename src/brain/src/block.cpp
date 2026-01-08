@@ -389,9 +389,14 @@ NodeStatus PredictBallTraj::tick()
     // ===============================
     brain->log->setTimeNow();
 
-    const rerun::components::Vector2D measured_ball{(float)mx-(-4.5), (float)(-my)};
-    const rerun::components::Vector2D filtered_ball{(float)x_-(-4.5), (float)(-y_)};
-    const rerun::components::Vector2D predicted_ball{(float)pred_x-4.5, (float)(-pred_y)};
+    double ctPosx, ctPosy;
+    getInput("ctPosx", ctPosx);
+    getInput("ctPosy", ctPosy);
+    double cx = ctPosx, cy = ctPosy;
+
+    const rerun::components::Vector2D measured_ball{(float)(mx - cx), (float)(-(my - cy))};
+    const rerun::components::Vector2D filtered_ball{(float)(x_ - cx), (float)(-(y_ - cy))};
+    const rerun::components::Vector2D predicted_ball{(float)(pred_x - cx), (float)(-(pred_y - cy))};
 
     brain->log->log(
         "field/measured_ball",

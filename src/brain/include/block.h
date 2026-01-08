@@ -90,6 +90,8 @@ public:
             InputPort<double>("P0_pos", 0.25, "위치 공분산의 초기값"), 
             InputPort<double>("P0_vel", 1.0, "속도 공분산의 초기값"), 
             InputPort<double>("horizon", 0.5, "horizen초 뒤의 공을 예측"),
+            InputPort<double>("ctPosx", -4.5, "골대중앙의 위치"),
+            InputPort<double>("ctPosy", 0.0, "골대중앙의 위치"),
         };
     }
 

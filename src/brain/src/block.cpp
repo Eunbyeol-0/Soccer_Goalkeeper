@@ -24,7 +24,8 @@ NodeStatus CalcGoliePos::tick(){
     getInput("ctPosx", ctPosx);
     getInput("ctPosy", ctPosy);
     
-    auto bPos = brain->data->ball.posToField; // 공 위치
+    // auto bPos = brain->data->ball.posToField; // 공 위치 (기존)
+    auto bPos = brain->data->Pred_ball; // 공 위치 (KF 예측)
 
 	double cx = ctPosx, cy = ctPosy;
 	double bx = bPos.x, by = bPos.y;

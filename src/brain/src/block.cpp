@@ -190,10 +190,10 @@ NodeStatus GolieInitPos::tick(){
 NodeStatus PredictBallTraj::tick()
 {
     // ===============================
-    // 0) 초기값 (포트에서 튜닝)
+    // 0) 초기값 
     // ===============================
-    double R_meas;    // measurement noise (R): [m^2]
-    double sigma_a;   // process noise (Q)용 가속도 표준편차: [m/s^2]
+    double R_meas;    // measurement noise (R)
+    double sigma_a;   // process noise (Q)용 가속도 표준편차
     double P0_pos;    // 초기 위치 분산
     double P0_vel;    // 초기 속도 분산
 

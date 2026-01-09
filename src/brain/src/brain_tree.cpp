@@ -63,7 +63,11 @@ void BrainTree::initEntry(){
     setEntry<double>("ball_range", 0); // 공과의 거리
 
     //  승재욱 추가 : chase -> adjust -> kick
-    setEntry<string>("striker_state", "chase");   
+    setEntry<string>("striker_state", "chase");  
+    
+    //
+    setEntry<bool>("odom_calibrated", false);  
+
 }
 
 void BrainTree::tick(){ tree.tickOnce(); }

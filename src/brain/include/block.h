@@ -37,13 +37,15 @@ public:
     static PortsList providedPorts()
     {
         return {
-            InputPort<double>("stop_threshold", 0.1, "목표 위치 가까이 도달하면 정지"),
-            InputPort<double>("vx_limit", 0.7, "최대 속도"),
-            InputPort<double>("vy_limit", 0.35, "최대 속도"),
+            InputPort<double>("stop_threshold", 0.05, "목표 위치 가까이 도달하면 정지"),
+            InputPort<double>("vx_high", 1.0, "x 방향 최대 속도"),
+            InputPort<double>("vx_low", -0.7, "x 방향 최소 속도"),
+            InputPort<double>("vy_high", 1.0, "y 방향 최대 속도"),
+            InputPort<double>("vy_low", -1.0, "y 방향 최소 속도"),
             InputPort<double>("ctPosx", -4.5, "골대중앙의 위치"),
             InputPort<double>("ctPosy", 0.0, "골대중앙의 위치"),
-            //InputPort<double>("return_position_limit", 1.2, "이 이상 멀어지면 return 역할을 수행"),
-
+            InputPort<double>("Kp_theta", 4.0, "각속도의 P gain"),
+            InputPort<double>("Kp", 3.0, "선속도의 P gain"),
         };
     }
 

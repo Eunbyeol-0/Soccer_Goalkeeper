@@ -68,16 +68,11 @@ NodeStatus CalcGoliePos::tick(){
 
 NodeStatus GolieMove::tick(){
     double stop_Threshold;
-    double vxLimit, vyLimit;
     double ctPosx, ctPosy;
     double return_position_limit;
     getInput("stop_threshold", stop_Threshold); 
-    getInput("vx_limit", vxLimit);
-    getInput("vy_limit", vyLimit);
     getInput("ctPosx", ctPosx);
     getInput("ctPosy", ctPosy);
-    //getInput("return_position_limit", return_position_limit);
-
     
 		auto rPos = brain->data->getRobots(); // 상대 위치
 		auto gPos = brain->data->robotPoseToField; // 본인 위치
@@ -97,31 +92,39 @@ NodeStatus GolieMove::tick(){
     double vy = targety - gy;
     double theta = atan2(vy, vx);
     double dist = norm(vx, vy);
-    double Kp = 4.0;
+
+    double Kp_theta = 4.0;
+    double Kp = 2.0;
+    getInput("Kp_theta", Kp_theta); 
+    getInput("Kp", Kp); 
+
     double vtheta;
     vtheta = toPInPI((theta - gtheta) + (targettheta - theta));
-    // if(dist > return_position_limit) vtheta = toPInPI(theta - gtheta);
-    // else vtheta = toPInPI((theta - gtheta) + (targettheta - theta));
-    vtheta *= Kp;
+    vtheta *= Kp_theta;
 
     // map 좌표계의 제어명령 vx,vy를 ego좌표계 제어명령으로 변환
     double controlx = vx*cos(gtheta) + vy*sin(gtheta);
     double controly = -vx*sin(gtheta) + vy*cos(gtheta);
     
     // 가까워질수록 속도가 줄어들도록
-    double linearFactor = 1.5 / (1.0 + exp(-6.0 * (dist - 0.5)));
+    double linearFactor = Kp / (1.0 + exp(-3.0 * (dist - 0.3)));
     controlx *= linearFactor;
     controly *= linearFactor;
-    // double v = norm(vx, vy);
 
     // 속도 제한
-    controlx = cap(controlx, vxLimit, -vxLimit*0.5);    
-    controly = cap(controly, vyLimit, -vyLimit);
+    double vx_high, vx_low;
+    double vy_high, vy_low;
+    getInput("vx_high", vx_high);
+    getInput("vx_low", vx_low);
+    getInput("vy_high", vy_high);
+    getInput("vy_low", vy_low);
+    controlx = cap(controlx, vx_high, vx_low);    
+    controly = cap(controly, vy_high, vy_low);
 
     if (dist < stop_Threshold){
         controlx = 0;
         controly = 0;
-        theta = 0;
+        vtheta = 0;
     }
     
     brain->client->setVelocity(controlx, controly, vtheta, false, false, false);
@@ -218,7 +221,7 @@ NodeStatus PredictBallTraj::tick()
     double dt = 0.03;
     if (has_prev_time_) {
         dt = (now - prev_time_).seconds();
-        dt = std::clamp(dt, 1e-3, 0.2);
+        dt = std::clamp(dt, 1e-3, 0.15);
     }
     prev_time_ = now;
     has_prev_time_ = true;
@@ -396,7 +399,6 @@ NodeStatus PredictBallTraj::tick()
     double cx = ctPosx, cy = ctPosy;
 
     const rerun::components::Vector2D measured_ball{(float)(mx - cx), (float)(-(my - cy))};
-    const rerun::components::Vector2D filtered_ball{(float)(x_ - cx), (float)(-(y_ - cy))};
     const rerun::components::Vector2D predicted_ball{(float)(pred_x - cx), (float)(-(pred_y - cy))};
 
     brain->log->log(
@@ -406,15 +408,6 @@ NodeStatus PredictBallTraj::tick()
             .with_colors({0x00FF00FF})
             .with_radii(0.01f)
             .with_draw_order(30)
-    );
-
-    brain->log->log(
-        "field/filtered_ball",
-        rerun::Arrows2D::from_vectors({filtered_ball})
-            .with_origins({{-4.5, 0.0}})
-            .with_colors({0x00FFFFFF})
-            .with_radii(0.01f)
-            .with_draw_order(31)
     );
 
     brain->log->log(

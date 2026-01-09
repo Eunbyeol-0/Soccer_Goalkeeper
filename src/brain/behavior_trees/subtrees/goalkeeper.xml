@@ -42,9 +42,9 @@
 
               <!--decision 1: hold-->
               <ReactiveSequence _while="decision == 'hold'">
-                <PredictBallTraj/>
+                <PredictBallTraj R_meas="0.01" sigma_a="1.5" horizon="0.5"/>
                 <CalcGoliePos />
-                <GolieMove stop_threshold="0.1" vx_limit="0.8" vy_limit="0.35"/>
+                <GolieMove vx_high="1.0" vx_low="-0.7" vy_high="1.0" vy_low="-1.0" Kp="3.0" Kp_theta="4.0"/>
               </ReactiveSequence>
 
               <!--decision 2: clearing-->

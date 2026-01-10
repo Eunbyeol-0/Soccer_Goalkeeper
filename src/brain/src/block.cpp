@@ -225,6 +225,7 @@ NodeStatus PredictBallTraj::tick()
     }
     prev_time_ = now;
     has_prev_time_ = true;
+    // prtDebug("dt: " + to_string(dt)); // BT tick 프레임 확인 용도
 
     // ===============================
     // 3) KF 초기화

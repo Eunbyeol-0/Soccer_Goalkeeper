@@ -242,6 +242,11 @@ NodeStatus PredictBallTraj::tick()
     // 3) KF 초기화
     // ===============================
     if (!kf_initialized_) {
+
+        if (!meas_valid) {
+            return NodeStatus::SUCCESS;
+        } // 공 안 보이면 초기화하지 않음
+
         // 상태: [x y vx vy]  
         x_ = mx; y_ = my;
         vx_ = 0.0; vy_ = 0.0;
@@ -254,6 +259,10 @@ NodeStatus PredictBallTraj::tick()
         P_[2][2] = P_[3][3] = P0_vel;
 
         kf_initialized_ = true;
+
+        last_meas_stamp_ = meas_stamp;
+        has_last_meas_ = true;
+
         return NodeStatus::SUCCESS;
     }
 
@@ -418,6 +427,7 @@ NodeStatus PredictBallTraj::tick()
     const rerun::components::Vector2D measured_ball{(float)(mx - cx), (float)(-(my - cy))};
     const rerun::components::Vector2D predicted_ball{(float)(pred_x - cx), (float)(-(pred_y - cy))};
 
+    if (new_meas) { 
     brain->log->log(
         "field/measured_ball",
         rerun::Arrows2D::from_vectors({measured_ball})
@@ -426,6 +436,7 @@ NodeStatus PredictBallTraj::tick()
             .with_radii(0.01f)
             .with_draw_order(30)
     );
+    }
 
     brain->log->log(
         "field/predicted_ball",

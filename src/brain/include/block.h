@@ -109,5 +109,9 @@ private:
     double x_{0.0}, y_{0.0}, vx_{0.0}, vy_{0.0};
     double P_[4][4]{};  // 0으로 초기화
 
+    // ----- 카메라 들어오는 프레임 판별용 -----
+    bool has_last_meas_{false};
+    rclcpp::Time last_meas_stamp_{0, 0, RCL_ROS_TIME};
+
     Brain *brain;
 };

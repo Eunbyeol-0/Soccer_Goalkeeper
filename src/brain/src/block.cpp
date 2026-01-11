@@ -214,18 +214,29 @@ NodeStatus PredictBallTraj::tick()
     const double my = bPos.y;   
 
     // ===============================
-    // 2) dt 계산 (tick 기반 유지)
+    // 2) dt 계산 
     // ===============================
+    // 2-1) prediction용 BT tick 계산
     const auto now = brain->get_clock()->now();
-
     double dt = 0.03;
     if (has_prev_time_) {
         dt = (now - prev_time_).seconds();
-        dt = std::clamp(dt, 1e-3, 0.15);
+        dt = std::clamp(dt, 1e-3, 0.05);
     }
     prev_time_ = now;
     has_prev_time_ = true;
     // prtDebug("dt: " + to_string(dt)); // BT tick 프레임 확인 용도
+
+    // 2-2) update용 카메라 프레임 판별
+    const auto meas_stamp = brain->data->ball.timePoint;
+    const bool meas_valid = brain->data->ballDetected; 
+
+    bool new_meas = false;
+    if (meas_valid) {
+        if (!has_last_meas_ || meas_stamp != last_meas_stamp_) {
+            new_meas = true;
+        }
+    }
 
     // ===============================
     // 3) KF 초기화
@@ -249,13 +260,13 @@ NodeStatus PredictBallTraj::tick()
     // ===============================
     // 4) 예측 단계 (CV: 필드 좌표계)
     // ===============================
-    // 6-1) 상태 예측
+    // 4-1) 상태 예측
     const double x_pred  = x_ + vx_ * dt;
     const double y_pred  = y_ + vy_ * dt;
     const double vx_pred = vx_;
     const double vy_pred = vy_;
 
-    // 6-2) 공분산 예측: P = F P F^T + Q
+    // 4-2) 공분산 예측: P = F P F^T + Q
     const double F[4][4] = {
         { 1, 0,  dt, 0  },
         { 0, 1,  0,  dt },
@@ -311,6 +322,7 @@ NodeStatus PredictBallTraj::tick()
     // ===============================
     // 5) 업데이트 단계 
     // ===============================
+    if (new_meas) { // 새로운 측정이 들어올 때만 업데이트
     const double r0 = mx - x_;
     const double r1 = my - y_;
 
@@ -372,7 +384,11 @@ NodeStatus PredictBallTraj::tick()
 
     for (int i = 0; i < 4; ++i)
         for (int j = 0; j < 4; ++j)
-            P_[i][j] = Pnew[i][j];
+            P_[i][j] = Pnew[i][j]; 
+        
+    last_meas_stamp_ = meas_stamp;
+    has_last_meas_ = true;
+    }
 
     // ===============================
     // 6) 미래 위치 예측 (horizon)

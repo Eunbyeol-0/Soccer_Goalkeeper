@@ -87,13 +87,16 @@ public:
     static PortsList providedPorts()
     {
         return {
+            // KF 튜닝에 사용
             InputPort<double>("R_meas", 0.01, "measurement noise (R)"), 
             InputPort<double>("sigma_a", 1.5, "proccess noise (Q)"),
             InputPort<double>("P0_pos", 0.25, "위치 공분산의 초기값"), 
             InputPort<double>("P0_vel", 1.0, "속도 공분산의 초기값"), 
             InputPort<double>("horizon", 0.5, "horizen초 뒤의 공을 예측"),
+            // 미탐 시 감속에 사용
             InputPort<double>("drop_time", 1.0, "drop_time이 넘는 시간동안 공이 미탐 상태이면 감속 적용"),
             InputPort<double>("vel_decay", 0.5, "감속 정도"),
+            // 시각화에 사용
             InputPort<double>("ctPosx", -4.5, "골대중앙의 위치"),
             InputPort<double>("ctPosy", 0.0, "골대중앙의 위치"),
         };

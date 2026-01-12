@@ -267,7 +267,7 @@ NodeStatus PredictBallTraj::tick()
     }
 
     // ===============================
-    // 4) 예측 단계 (CV: 필드 좌표계)
+    // 4) 예측 단계 
     // ===============================
     // 4-1) 상태 예측
     const double x_pred  = x_ + vx_ * dt;
@@ -327,6 +327,26 @@ NodeStatus PredictBallTraj::tick()
     for (int i = 0; i < 4; ++i)
         for (int j = 0; j < 4; ++j)
             P_[i][j] = P_pred[i][j];
+
+    // ===============================
+    // (추가) 공을 탐지하지 못한 경우 속도 감쇠
+    // ===============================
+    double drop_time  = 1.0;
+    double vel_decay = 0.5;
+    getInput("drop_time", drop_time);
+    getInput("vel_decay", vel_decay);
+
+    double ball_lost_time = 1e9;
+    if (has_last_meas_) {
+        ball_lost_time = (now - last_meas_stamp_).seconds();
+    }
+
+    // drop_time이 지나면 vel_decay만큼 속도 감쇠
+    if (!meas_valid && has_last_meas_ && ball_lost_time > drop_time) {
+        const double decay = std::exp(-vel_decay * dt);
+        vx_ *= decay;
+        vy_ *= decay;
+        }
 
     // ===============================
     // 5) 업데이트 단계 

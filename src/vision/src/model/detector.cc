@@ -34,7 +34,8 @@ std::shared_ptr<YoloV8Detector> YoloV8Detector::CreateYoloV8Detector(const YAML:
             detector_ptr->setNMSThreshold(nms_thresh);
         }
         return detector_ptr;
-    } catch (const std::exception &e) {
+    } 
+    catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
         return nullptr;
     }

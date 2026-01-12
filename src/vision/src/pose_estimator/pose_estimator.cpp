@@ -5,26 +5,49 @@
 
 namespace booster_vision {
 
+// 카메라 이미지의 한 픽셀(u,v)이 로봇 좌표계의 z=0이 만나는 3D 위치 
+/*
+    전체 알고리즘
+	1.	이미지 픽셀 (u,v)을 하나 고른다.
+	2.	그 픽셀은 카메라에서 보면 “어떤 방향”을 의미한다.
+        → 카메라 원점에서 그 픽셀 방향으로 나가는 광선(ray) 을 만든다.
+	3.	그 광선을 “베이스 좌표계”로 회전시킨다.
+	4.	카메라 원점이 베이스에서 어디 있는지(translation)도 안다.
+	5.	이제 베이스 좌표계에서:
+	    • 시작점: 카메라 위치 t
+	    • 방향: 회전된 ray 방향 d
+        로 나타나는 직선이 있다:
+        P(s) = t + s d
+	6.	이 직선이 바닥(z=0)과 만나는 s를 구한다.
+	7.	그 s를 다시 넣어 교차점 P를 구한다.
+*/
 cv::Point3f CalculatePositionByIntersection(const Pose &p_eye2base, const cv::Point2f target_uv, const Intrinsics &intr) {
-    cv::Point3f normalized_point3d = intr.BackProject(target_uv);
+    cv::Point3f normalized_point3d = intr.BackProject(target_uv); // 카메라 원점에서 시작해서 픽셀(u,v)을 향해 나가는 방향 벡터
 
+    // 카메라 좌표계 기준 광선 방향 벡터
+    // 카메라 원점에서 앞(z)으로 1만큼 간 평면 위의 점을 만들고, 그 방향으로 쭉 나가는 광선을 생각.
     cv::Mat mat_obj_ray = (cv::Mat_<float>(3, 1) << normalized_point3d.x, normalized_point3d.y, normalized_point3d.z);
+    
+    // Rotation, translation 분리 (4x4 행렬을 분리)
     cv::Mat mat_rot = p_eye2base.getRotationMatrix();
     cv::Mat mat_trans = p_eye2base.toCVMat().col(3).rowRange(0, 3);
 
-    cv::Mat mat_rot_obj_ray = mat_rot * mat_obj_ray;
+    // 방향 벡터는 위치가 아니라 방향이므로, 변환할 때 회전만 적용
+    // 베이스 좌표계에서의 ray 방향 벡터 d
+    cv::Mat mat_rot_obj_ray = mat_rot * mat_obj_ray; // 광선 방향 -> base 좌표계로 변환
 
-    float scale = -mat_trans.at<float>(2, 0) / mat_rot_obj_ray.at<float>(2, 0);
+    // 얼마나 멀리 가야 바닥(z=0)에 닿는지”를 의미
+    float scale = -mat_trans.at<float>(2, 0) / mat_rot_obj_ray.at<float>(2, 0); // z=0과 만나는 스케일 factor 계산
 
-    cv::Mat mat_position = mat_trans + scale * mat_rot_obj_ray;
+    cv::Mat mat_position = mat_trans + scale * mat_rot_obj_ray; // 실제 교차점 위치 계산
     return cv::Point3f(mat_position.at<float>(0, 0), mat_position.at<float>(1, 0), mat_position.at<float>(2, 0));
 }
 
 Pose PoseEstimator::EstimateByColor(const Pose &p_eye2base, const DetectionRes &detection, const cv::Mat &rgb) {
     // TODO(GW): add modification for cross class
     auto bbox = detection.bbox;
-    cv::Point2f target_uv = cv::Point2f(bbox.x + bbox.width / 2, bbox.y + bbox.height / 2);
-    cv::Point3f target_xyz = CalculatePositionByIntersection(p_eye2base, target_uv, intr_);
+    cv::Point2f target_uv = cv::Point2f(bbox.x + bbox.width / 2, bbox.y + bbox.height / 2); // 바운딩 박스 중앙 
+    cv::Point3f target_xyz = CalculatePositionByIntersection(p_eye2base, target_uv, intr_); // base 3D로 변환
     return Pose(target_xyz.x, target_xyz.y, target_xyz.z, 0, 0, 0);
 }
 
@@ -32,15 +55,17 @@ Pose PoseEstimator::EstimateByDepth(const Pose &p_eye2base, const DetectionRes &
     return Pose();
 }
 
+
+// ------------------------------- Ball Pose ------------------------------
 void BallPoseEstimator::Init(const YAML::Node &node) {
-    use_depth_ = as_or<bool>(node["use_depth"], false);
-    radius_ = as_or<float>(node["radius"], 0.109);
-    downsample_leaf_size_ = as_or<float>(node["down_sample_leaf_size"], 0.01);
-    cluster_distance_threshold_ = as_or<float>(node["cluster_distance_threshold"], 0.01);
-    fitting_distance_threshold_ = as_or<float>(node["fitting_distance_threshold"], 0.01);
-    minimum_cluster_size_ = as_or<int>(node["minimum_cluster_size"], 150);
-    filter_distance_ = as_or<float>(node["filter_distance"], 1.0);
-    check_ball_height_ = as_or<bool>(node["check_ball_height"], false);
+    use_depth_ = as_or<bool>(node["use_depth"], false); // 현재 false
+    radius_ = as_or<float>(node["radius"], 0.109); // 공의 실제 반지름
+    downsample_leaf_size_ = as_or<float>(node["down_sample_leaf_size"], 0.01); // Voxel Grid 다운샘플링 해상도 (meters)
+    cluster_distance_threshold_ = as_or<float>(node["cluster_distance_threshold"], 0.01); // 클러스터링 시 “같은 물체”로 묶을 최대 거리 (meters)
+    fitting_distance_threshold_ = as_or<float>(node["fitting_distance_threshold"], 0.01); // 구 피팅(Sphere fitting) 시 inlier 허용 오차
+    minimum_cluster_size_ = as_or<int>(node["minimum_cluster_size"], 150); // 이 정도 점 수는 있어야 공 후보로 인정
+    filter_distance_ = as_or<float>(node["filter_distance"], 1.0); // 카메라 기준 최대 공 검출 거리
+    check_ball_height_ = as_or<bool>(node["check_ball_height"], false); // 공의 z 높이가 “물리적으로 말이 되는지” 검사
     std::cout << "filter_distance: " << filter_distance_ << std::endl;
 }
 
@@ -63,8 +88,9 @@ Pose BallPoseEstimator::EstimateByDepth(const Pose &p_eye2base, const DetectionR
     CreatePointCloud(cloud, depth, rgb, detection.bbox, intr_);
     if (cloud->points.size() < 100) return Pose();
 
+    // 3D 공간을 작은 정육면체(voxel) 격자로 나누고, 각 격자 안의 점들을 하나의 대표 점으로 줄이는 과정
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr downsampled_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-    DownSamplePointCloud(downsampled_cloud, downsample_leaf_size_, cloud);
+    DownSamplePointCloud(downsampled_cloud, downsample_leaf_size_, cloud); 
     if (downsampled_cloud->points.size() < 100) return Pose();
 
     std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clustered_clouds;
@@ -92,6 +118,7 @@ Pose BallPoseEstimator::EstimateByDepth(const Pose &p_eye2base, const DetectionR
     return Pose();
 }
 
+// ------------------------------- Human like Pose ------------------------------
 void HumanLikePoseEstimator::Init(const YAML::Node &node) {
     use_depth_ = as_or<bool>(node["use_depth"], false);
     downsample_leaf_size_ = as_or<float>(node["downsample_leaf_size"], 0.01);
@@ -145,6 +172,7 @@ Pose HumanLikePoseEstimator::EstimateByDepth(const Pose &p_eye2base, const Detec
     return pose;
 }
 
+// ------------------------------- Marker Pose ------------------------------
 void FieldMarkerPoseEstimator::Init(const YAML::Node &node) {
     refine_ = as_or<bool>(node["refine"], false);
 }
@@ -246,6 +274,9 @@ void get_colliner_idx(const int &idx, std::map<int, std::vector<int>> &idx_map, 
     }
 }
 
+// YOLO bbox 중심은 대충이고,
+// 실제 필드 마커 중심은 ‘교차하는 직선들의 교점’이다.
+// → 에지 + 허프 + 직선 병합 + 교점 평균으로 중심을 재계산한다.
 cv::Point2f RefineFieldMarkerCenterDetection(const cv::Mat &img, const cv::Rect &bbox, float scale_factor) {
     cv::Point2f center(bbox.x + bbox.width / 2.0f, bbox.y + bbox.height / 2.0f);
 
@@ -565,5 +596,6 @@ cv::Mat DrawFieldLineSegments(cv::Mat &img, const std::vector<FieldLineSegment> 
     }
     return display;
 }
+
 
 } // namespace booster_vision

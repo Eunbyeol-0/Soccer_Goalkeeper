@@ -50,6 +50,7 @@
               <!--decision 2: clearing-->
               <ReactiveSequence _while="decision == 'clearing'">
 	              <ReactiveSequence>
+                  <PredictBallTraj R_meas="0.02" sigma_a="2.0" horizon="0.8"/>
 		              <GoalieClearingDecide decision_out="{clearing_decision}" decision_in="{clearing_decision}" />
 		            </ReactiveSequence>
 		            

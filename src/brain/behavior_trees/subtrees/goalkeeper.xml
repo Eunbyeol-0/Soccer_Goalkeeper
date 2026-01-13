@@ -42,7 +42,7 @@
 
               <!--decision 1: hold-->
               <ReactiveSequence _while="decision == 'hold'">
-                <PredictBallTraj R_meas="0.02" sigma_a="2.0" horizon="0.8"/>
+                <PredictBallTraj R_meas="0.02" sigma_a="2.0" horizon="0.8" vel_decay="0.3"/>
                 <CalcGoliePos />
                 <GolieMove vx_high="1.0" vx_low="-0.5" vy_high="0.8" vy_low="-0.8" Kp="2.0" Kp_theta="4.0"/>
               </ReactiveSequence>

@@ -37,20 +37,20 @@ NodeStatus CalcGoliePos::tick(){
 	double ux = dx / d; // 단위방향벡터
 	double uy = dy / d;
 		
-		// "반원" 선택 로직... 반코트 기준 하드코딩이므로 나중에 수정필요
-		if (ux < 0.15) {
-            ux = cap(ux, 10.0, 0.15);
-            uy = uy;
-		}
-		
-		// 교점 계산
-		double tx = cx + r * ux;
-		double ty = cy + r * uy;
-		
-		// Pose2D로의 변환 및 저장
-		Pose2D GoliePos;
-		GoliePos.x = tx; GoliePos.y = ty;  
-		brain->data->GoliePos = GoliePos;
+    // "반원" 선택 로직... 반코트 기준 하드코딩이므로 나중에 수정필요
+    if (ux < 0.15) {
+        ux = cap(ux, 10.0, 0.15);
+        uy = uy;
+    }
+    
+    // 교점 계산
+    double tx = cx + r * ux;
+    double ty = cy + r * uy;
+    
+    // Pose2D로의 변환 및 저장
+    Pose2D GoliePos;
+    GoliePos.x = tx; GoliePos.y = ty;  
+    brain->data->GoliePos = GoliePos;
 
     // 시각화
     brain->log->setTimeNow();
@@ -63,7 +63,7 @@ NodeStatus CalcGoliePos::tick(){
             .with_draw_order(32)
     );
 		
-		return NodeStatus::SUCCESS;
+	return NodeStatus::SUCCESS;
 }
 
 NodeStatus GolieMove::tick(){
@@ -74,9 +74,9 @@ NodeStatus GolieMove::tick(){
     getInput("ctPosx", ctPosx);
     getInput("ctPosy", ctPosy);
     
-		auto rPos = brain->data->getRobots(); // 상대 위치
-		auto gPos = brain->data->robotPoseToField; // 본인 위치
-		auto target = brain->data->GoliePos; // 목표 위치
+    auto rPos = brain->data->getRobots(); // 상대 위치
+    auto gPos = brain->data->robotPoseToField; // 본인 위치
+    auto target = brain->data->GoliePos; // 목표 위치
 
     if (!brain->tree->getEntry<bool>("ball_location_known")){
         brain->client->setVelocity(0,0,0);
@@ -85,8 +85,8 @@ NodeStatus GolieMove::tick(){
 
     // 단순 P 제어
     double gx = gPos.x, gy = gPos.y, gtheta = gPos.theta;
-		double targetx = target.x, targety = target.y;
-		double targettheta = atan2((targety-ctPosy),(targetx-ctPosx));
+	double targetx = target.x, targety = target.y;
+	double targettheta = atan2((targety-ctPosy),(targetx-ctPosx));
 		
     double vx = targetx - gx;
     double vy = targety - gy;
@@ -187,7 +187,7 @@ NodeStatus GolieInitPos::tick(){
         controltheta = 0;
     }
 
-		brain->client->setVelocity(controlx, controly, controltheta, false, false, false);
+	brain->client->setVelocity(controlx, controly, controltheta, false, false, false);
     return NodeStatus::SUCCESS;
 }
 
@@ -419,19 +419,60 @@ NodeStatus PredictBallTraj::tick()
     has_last_meas_ = true;
     }
 
-    // ===============================
-    // 6) 미래 위치 예측 (horizon)
-    // ===============================
-    double horizon = 0.5;
-    getInput("horizon", horizon);
+    // // ===============================
+    // // 6) 미래 위치 예측 (horizon)
+    // // ===============================
+    // double horizon = 0.5;
+    // getInput("horizon", horizon);
 
-    const double pred_x = x_ + vx_ * horizon;
-    const double pred_y = y_ + vy_ * horizon;
+    // const double pred_x = x_ + vx_ * horizon;
+    // const double pred_y = y_ + vy_ * horizon;
 
-    // Pose2D로 변환 및 저장 (필드 좌표계)
+    // // Pose2D로 변환 및 저장 (필드 좌표계)
+    // Pose2D Pred_ball;
+    // Pred_ball.x = pred_x;
+    // Pred_ball.y = pred_y;
+    // brain->data->Pred_ball = Pred_ball;
+
+    // ===============================
+    // 6) 미래 위치 예측 (감속 모델)
+    // ===============================
+
+    double a_min = 0.1;   // 고속에서 감속(작게)  (m/s^2)
+    double a_max = 0.8;   // 저속에서 감속(크게)  (m/s^2)
+    double k_av  = 4.0;   // v에 따른 전이 강도
+
+    getInput("a_min", a_min);
+    getInput("a_max", a_max);
+    getInput("k_av",  k_av);
+
+    a_min = std::max(a_min, 1e-3);
+    a_max = std::max(a_max, a_min + 1e-3);
+    k_av  = std::max(k_av,  1e-3);
+
+    const double vx = vx_;
+    const double vy = vy_;
+    const double v  = std::sqrt(vx*vx + vy*vy);
+
     Pose2D Pred_ball;
-    Pred_ball.x = pred_x;
-    Pred_ball.y = pred_y;
+    Pred_ball.x = x_;
+    Pred_ball.y = y_;
+
+    double a_eff = a_min;  // 디버그용 기본값
+    double stop_dist = 0.0;
+
+    if (v > 0.005) {
+        // a(v) = a_min + (a_max-a_min)*exp(-k*v)
+        a_eff = a_min + (a_max - a_min) * std::exp(-k_av * v);
+        stop_dist = (v*v) / (2.0 * a_eff);
+
+        const double ux = vx / v;
+        const double uy = vy / v;
+
+        Pred_ball.x = x_ + ux * stop_dist;
+        Pred_ball.y = y_ + uy * stop_dist;
+    }
+
     brain->data->Pred_ball = Pred_ball;
 
     // ===============================
@@ -444,19 +485,19 @@ NodeStatus PredictBallTraj::tick()
     getInput("ctPosy", ctPosy);
     double cx = ctPosx, cy = ctPosy;
 
-    const rerun::components::Vector2D measured_ball{(float)(mx - cx), (float)(-(my - cy))};
-    const rerun::components::Vector2D predicted_ball{(float)(pred_x - cx), (float)(-(pred_y - cy))};
+    // const rerun::components::Vector2D measured_ball{(float)(mx - cx), (float)(-(my - cy))};
+    const rerun::components::Vector2D predicted_ball{(float)(Pred_ball.x - cx), (float)(-(Pred_ball.y - cy))};
 
-    if (new_meas) { 
-    brain->log->log(
-        "field/measured_ball",
-        rerun::Arrows2D::from_vectors({measured_ball})
-            .with_origins({{-4.5, 0.0}})
-            .with_colors({0x00FF00FF})
-            .with_radii(0.01f)
-            .with_draw_order(30)
-    );
-    }
+    // if (new_meas) { 
+    // brain->log->log(
+    //     "field/measured_ball",
+    //     rerun::Arrows2D::from_vectors({measured_ball})
+    //         .with_origins({{-4.5, 0.0}})
+    //         .with_colors({0x00FF00FF})
+    //         .with_radii(0.01f)
+    //         .with_draw_order(30)
+    // );
+    // }
 
     brain->log->log(
         "field/predicted_ball",
@@ -465,6 +506,13 @@ NodeStatus PredictBallTraj::tick()
             .with_colors({0xFFAA00FF})
             .with_radii(0.015f)
             .with_draw_order(32)
+    );
+
+        brain->log->log(
+        "field/final_stop_pos",
+        rerun::Points2D({{(float)Pred_ball.x, -(float)Pred_ball.y}}) 
+            .with_colors({0xFF0000FF}) 
+            .with_radii(0.05f)
     );
 
     return NodeStatus::SUCCESS;

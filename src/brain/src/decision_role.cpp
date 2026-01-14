@@ -80,7 +80,7 @@ NodeStatus GoalieDecide::tick()
     // -----------------------------
     // 판정 결과
     // -----------------------------
-	if (distBallToGoal < clearing_min) {
+	if (distBallToGoal < clearing_min || (lastDecision == "clearing" && !ballKnown)) {
 	    newDecision = "critical";
 	}
 	else if (ballInClearingZone && iAmCloser && (!StopClearing)) {
@@ -110,22 +110,6 @@ NodeStatus GoalieDecide::tick()
         color
     );
     
-    bool canClear = ballInClearingZone && iAmCloser && (!StopClearing);
-
-    // 디버깅용
-    prtDebug(
-    "[GoalieDecide]\n"
-    " Params  : ct=(%.2f, %.2f) clr_min=%.2f clr_max=%.2f margin=%.2f\n"
-    " Dist    : GK->Ball=%.2f Ball->Goal=%.2f GK->Goal=%.2f\n"
-    " Flags   : inZone=%d closer=%d stop=%d  ==> canClear=%d\n"
-    ctPosx, ctPosy, clearing_min, clearing_max, closer_margin,
-    distGKToBall, distBallToGoal, distGKToGoal,
-    ballInClearingZone,
-    iAmCloser,
-    StopClearing,
-    canClear,
-    );
-
     return NodeStatus::SUCCESS;
 }
 

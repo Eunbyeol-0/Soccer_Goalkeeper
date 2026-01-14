@@ -530,16 +530,6 @@ NodeStatus SelfLocateEnterField::tick()
             res.success
         );
 
-    brain->log->log(
-        "field/recal_enter_field", 
-        rerun::Arrows2D::from_vectors({{res.pose.x - brain->data->robotPoseToField.x, -res.pose.y + brain->data->robotPoseToField.y}})
-            .with_origins({{brain->data->robotPoseToField.x, - brain->data->robotPoseToField.y}})
-            .with_colors(res.success ? 0x00FF00FF: 0xFF0000FF)
-            .with_radii(0.01)
-            .with_draw_order(10)
-            .with_labels({"pfe"})
-    );
-
     if (!res.success) return NodeStatus::SUCCESS; 
 
 

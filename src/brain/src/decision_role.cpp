@@ -29,15 +29,6 @@ NodeStatus GoalieDecide::tick()
     getInput("closer_margin", closer_margin);
     getInput("clearing_max", clearing_max);
 
-    // 디버깅 용도
-    bool ok_ctx = getInput("ctPosx", ctPosx);
-    bool ok_cty = getInput("ctPosy", ctPosy);
-    bool ok_min = getInput("clearing_min", clearing_min);
-    bool ok_mar = getInput("closer_margin", closer_margin);
-    bool ok_max = getInput("clearing_max", clearing_max);
-    prtDebug("IN ok: ctx=%d cty=%d min=%d mar=%d max=%d  vals: ctx=%.3f cty=%.3f min=%.3f mar=%.3f max=%.3f", ok_ctx, ok_cty, ok_min, ok_mar, ok_max, ctPosx, ctPosy, clearing_min, closer_margin, clearing_max);
-
-
     // 공 위치 신뢰 (아직 사용 X)
     bool iKnowBallPos      = brain->tree->getEntry<bool>("ball_location_known");
     bool tmBallPosReliable = brain->tree->getEntry<bool>("tm_ball_pos_reliable");
@@ -118,6 +109,23 @@ NodeStatus GoalieDecide::tick()
         newDecision.c_str()),
         color
     );
+    
+    bool canClear = ballInClearingZone && iAmCloser && (!StopClearing);
+
+    // 디버깅용
+    prtDebug(
+    "[GoalieDecide]\n"
+    " Params  : ct=(%.2f, %.2f) clr_min=%.2f clr_max=%.2f margin=%.2f\n"
+    " Dist    : GK->Ball=%.2f Ball->Goal=%.2f GK->Goal=%.2f\n"
+    " Flags   : inZone=%d closer=%d stop=%d  ==> canClear=%d\n"
+    ctPosx, ctPosy, clearing_min, clearing_max, closer_margin,
+    distGKToBall, distBallToGoal, distGKToGoal,
+    ballInClearingZone,
+    iAmCloser,
+    StopClearing,
+    canClear,
+    );
+
     return NodeStatus::SUCCESS;
 }
 

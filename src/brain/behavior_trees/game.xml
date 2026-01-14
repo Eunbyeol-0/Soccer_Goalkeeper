@@ -3,10 +3,7 @@
     <!--<include path="./dribble.xml" />-->
     <include path="./subtrees/locate.xml" />
     <include path="./subtrees/cam_find_and_track_ball.xml" />
-    <include path="./subtrees/striker.xml" />
-    <include path="./subtrees/defender.xml" />
     <include path="./subtrees/goalkeeper.xml" />
-
 
     <!-- 시작 -->
     <BehaviorTree ID="MainTree">

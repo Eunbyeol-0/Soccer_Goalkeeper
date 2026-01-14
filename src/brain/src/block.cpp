@@ -419,61 +419,61 @@ NodeStatus PredictBallTraj::tick()
     has_last_meas_ = true;
     }
 
-    // // ===============================
-    // // 6) 미래 위치 예측 (horizon)
-    // // ===============================
-    // double horizon = 0.5;
-    // getInput("horizon", horizon);
-
-    // const double pred_x = x_ + vx_ * horizon;
-    // const double pred_y = y_ + vy_ * horizon;
-
-    // // Pose2D로 변환 및 저장 (필드 좌표계)
-    // Pose2D Pred_ball;
-    // Pred_ball.x = pred_x;
-    // Pred_ball.y = pred_y;
-    // brain->data->Pred_ball = Pred_ball;
-
     // ===============================
-    // 6) 미래 위치 예측 (감속 모델)
+    // 6) 미래 위치 예측 (horizon)
     // ===============================
+    double horizon = 0.5;
+    getInput("horizon", horizon);
 
-    double a_min = 0.1;   // 고속에서 감속(작게)  (m/s^2)
-    double a_max = 0.8;   // 저속에서 감속(크게)  (m/s^2)
-    double k_av  = 4.0;   // v에 따른 전이 강도
+    const double pred_x = x_ + vx_ * horizon;
+    const double pred_y = y_ + vy_ * horizon;
 
-    getInput("a_min", a_min);
-    getInput("a_max", a_max);
-    getInput("k_av",  k_av);
-
-    a_min = std::max(a_min, 1e-3);
-    a_max = std::max(a_max, a_min + 1e-3);
-    k_av  = std::max(k_av,  1e-3);
-
-    const double vx = vx_;
-    const double vy = vy_;
-    const double v  = std::sqrt(vx*vx + vy*vy);
-
+    // Pose2D로 변환 및 저장 (필드 좌표계)
     Pose2D Pred_ball;
-    Pred_ball.x = x_;
-    Pred_ball.y = y_;
-
-    double a_eff = a_min;  // 디버그용 기본값
-    double stop_dist = 0.0;
-
-    if (v > 0.005) {
-        // a(v) = a_min + (a_max-a_min)*exp(-k*v)
-        a_eff = a_min + (a_max - a_min) * std::exp(-k_av * v);
-        stop_dist = (v*v) / (2.0 * a_eff);
-
-        const double ux = vx / v;
-        const double uy = vy / v;
-
-        Pred_ball.x = x_ + ux * stop_dist;
-        Pred_ball.y = y_ + uy * stop_dist;
-    }
-
+    Pred_ball.x = pred_x;
+    Pred_ball.y = pred_y;
     brain->data->Pred_ball = Pred_ball;
+
+    // // ===============================
+    // // 6) 미래 위치 예측 (감속 모델)
+    // // ===============================
+
+    // double a_min = 0.1;   // 고속에서 감속(작게)  (m/s^2)
+    // double a_max = 0.8;   // 저속에서 감속(크게)  (m/s^2)
+    // double k_av  = 4.0;   // v에 따른 전이 강도
+
+    // getInput("a_min", a_min);
+    // getInput("a_max", a_max);
+    // getInput("k_av",  k_av);
+
+    // a_min = std::max(a_min, 1e-3);
+    // a_max = std::max(a_max, a_min + 1e-3);
+    // k_av  = std::max(k_av,  1e-3);
+
+    // const double vx = vx_;
+    // const double vy = vy_;
+    // const double v  = std::sqrt(vx*vx + vy*vy);
+
+    // Pose2D Pred_ball;
+    // Pred_ball.x = x_;
+    // Pred_ball.y = y_;
+
+    // double a_eff = a_min;  // 디버그용 기본값
+    // double stop_dist = 0.0;
+
+    // if (v > 0.005) {
+    //     // a(v) = a_min + (a_max-a_min)*exp(-k*v)
+    //     a_eff = a_min + (a_max - a_min) * std::exp(-k_av * v);
+    //     stop_dist = (v*v) / (2.0 * a_eff);
+
+    //     const double ux = vx / v;
+    //     const double uy = vy / v;
+
+    //     Pred_ball.x = x_ + ux * stop_dist;
+    //     Pred_ball.y = y_ + uy * stop_dist;
+    // }
+
+    // brain->data->Pred_ball = Pred_ball;
 
     // ===============================
     // 7) 시각화 (rerun) - 필드 좌표계
@@ -508,12 +508,12 @@ NodeStatus PredictBallTraj::tick()
             .with_draw_order(32)
     );
 
-        brain->log->log(
-        "field/final_stop_pos",
-        rerun::Points2D({{(float)Pred_ball.x, -(float)Pred_ball.y}}) 
-            .with_colors({0xFF0000FF}) 
-            .with_radii(0.05f)
-    );
+    //     brain->log->log(
+    //     "field/stop_ball_pos",
+    //     rerun::Points2D({{(float)Pred_ball.x, -(float)Pred_ball.y}}) 
+    //         .with_colors({0xFF0000FF}) 
+    //         .with_radii(0.05f)
+    // );
 
     return NodeStatus::SUCCESS;
 }

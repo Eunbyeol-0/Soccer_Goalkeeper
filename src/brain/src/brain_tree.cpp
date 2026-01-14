@@ -28,7 +28,7 @@ void BrainTree::init(){
     brain->registerKickNodes(factory); // kick 관련 노드 등록
     brain->registerAdjustNodes(factory); // adjust 관련 노드 등록
     brain->registerDecisionRoleNodes(factory); // decision role 관련 노드 등록
-    brain->registerBlockNodes(factory); 
+    brain->registerHoldNodes(factory); 
     
     
     factory.registerBehaviorTreeFromFile(brain->config->treeFilePath);

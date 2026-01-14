@@ -1,18 +1,18 @@
 #include "brain.h"
 #include "brain_tree.h"
-#include "block.h"
+#include "hold.h"
 
-#define REGISTER_BLOCK_BUILDER(Name)     \
+#define REGISTER_HOLD_BUILDER(Name)     \
     factory.registerBuilder<Name>( \
         #Name,                     \
         [brain](const string &name, const NodeConfig &config) { return make_unique<Name>(name, config, brain); });
 
 
-void RegisterBlockNodes(BT::BehaviorTreeFactory &factory, Brain* brain){
-    REGISTER_BLOCK_BUILDER(PredictBallTraj)
-    REGISTER_BLOCK_BUILDER(CalcGoliePos)
-    REGISTER_BLOCK_BUILDER(GolieMove)
-    REGISTER_BLOCK_BUILDER(GolieInitPos)
+void RegisterHoldNodes(BT::BehaviorTreeFactory &factory, Brain* brain){
+    REGISTER_HOLD_BUILDER(PredictBallTraj)
+    REGISTER_HOLD_BUILDER(CalcGoliePos)
+    REGISTER_HOLD_BUILDER(GolieMove)
+    REGISTER_HOLD_BUILDER(GolieInitPos)
 }
 
 NodeStatus PredictBallTraj::tick()

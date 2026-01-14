@@ -44,7 +44,7 @@
 #include "kick.h"
 #include "adjust.h"
 #include "decision_role.h"
-#include "block.h"
+#include "hold.h"
 
 // Forward declaration to avoid circular dependency
 class BrainCommunication;
@@ -91,7 +91,7 @@ public:
     void registerChaseNodes(BT::BehaviorTreeFactory &factory){RegisterChaseNodes(factory, this);}
     void registerKickNodes(BT::BehaviorTreeFactory &factory){RegisterKickNodes(factory, this);}
     void registerAdjustNodes(BT::BehaviorTreeFactory &factory){RegisterAdjustNodes(factory, this);}
-    void registerBlockNodes(BT::BehaviorTreeFactory &factory){RegisterBlockNodes(factory, this);}
+    void registerHoldNodes(BT::BehaviorTreeFactory &factory){RegisterHoldNodes(factory, this);}
 
     
     // ROS callback 함수

@@ -155,8 +155,8 @@ NodeStatus PredictBallTraj::tick()
     // ===============================
     // (추가) 공을 탐지하지 못한 경우 속도 감쇠
     // ===============================
-    double drop_time  = 1.0;
-    double vel_decay = 0.5;
+    double drop_time  = 0.5;
+    double vel_decay = 0.3;
     getInput("drop_time", drop_time);
     getInput("vel_decay", vel_decay);
 

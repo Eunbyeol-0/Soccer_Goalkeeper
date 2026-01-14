@@ -22,7 +22,7 @@ NodeStatus GoalieDecide::tick()
     double ctPosx, ctPosy;
     double clearing_min, closer_margin;
     double clearing_max;
-    getInput("decision_in", lastDecision); // 사용 X
+    getInput("decision_in", lastDecision); 
     getInput("ctPosx", ctPosx);
     getInput("ctPosy", ctPosy);
     getInput("clearing_min", clearing_min);

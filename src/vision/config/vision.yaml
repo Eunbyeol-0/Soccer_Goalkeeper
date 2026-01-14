@@ -57,7 +57,7 @@ segmentation_model:
   nms_threshold: 0.9
 
 use_depth: true
-use_imu: true # imu로 cartesian 좌표 보정할 지 
+use_imu: false # imu로 cartesian 좌표 보정할 지 
 
 ball_pose_estimator:
   use_depth: false # 볼 위치 추정 시 depth 사용할지

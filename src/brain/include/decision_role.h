@@ -40,7 +40,6 @@ public:
         return {
             InputPort<double>("ctPosx", -4.5, "골대중앙의 위치"),
             InputPort<double>("ctPosy", 0.0, "골대중앙의 위치"),
-            InputPort<double>("clearing_min", 1.0, "골에서 이 거리보다 멀면 위험구역 밖"),
             InputPort<double>("closer_margin", 0.2, "내가 더 가깝다고 판정할 여유분"),
             InputPort<double>("clearing_max", 2.0, "이 이상 멀어지면 clearing 종료하고 hold 복귀"), 
             InputPort<string>("decision_in", "", "이전 틱에서의 decision 값을 읽기 위해 사용"),

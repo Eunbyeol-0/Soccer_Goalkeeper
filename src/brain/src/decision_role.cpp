@@ -73,15 +73,17 @@ NodeStatus GoalieDecide::tick()
     bool iAmCloser = (!hasOpponent) ? true : (distGKToBall + closer_margin < distOppToBallMin); 
     // 로봇이 골대로부터 너무 멀리 나가지 않도록
     bool StopClearing = distGKToGoal > clearing_max;
+    // 로봇이 공을 그냥 걷어낼 수 있다
+    bool FastClearOk = std::abs(gPos.x) > std::abs(bPos.x); 
 
     // -----------------------------
     // 판정 결과
     // -----------------------------
-	if ((!ballKnown) && (lastDecision == "clearing" || lastDecision == "find")) {
+	if ((!ballKnown) && (lastDecision == "normal_clearing" || lastDecision == "critical_clearing" || lastDecision == "find")) {
 	    newDecision = "find";
 	}
 	else if (ballInClearingZone && iAmCloser && (!StopClearing)) {
-	    newDecision = "clearing";
+	    newDecision = FastClearOk ? "normal_clearing" : "critical_clearing";
 	}
 	else {
 	    newDecision = "hold";

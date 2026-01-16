@@ -36,15 +36,8 @@
             <Sequence>
               <ReactiveSequence>
                 <GoalieDecide decision_out="{decision}" decision_in="{decision}" />
-                <!-- 공 찾기 -->
-                <!-- <SubTree ID="FindBall" _while="decision=='find'" _autoremap="true" /> -->
-              </ReactiveSequence>
-
-              <!--decision 1: hold-->
-              <ReactiveSequence _while="decision == 'hold'">
-                <PredictBallTraj R_meas="0.02" sigma_a="2.0" horizon="0.8" drop_time="0.5" vel_decay="0.3"/>
-                <CalcGoliePos />
-                <GolieMove vx_high="1.0" vx_low="-0.5" vy_high="0.8" vy_low="-0.8" Kp="2.5" Kp_theta="4.0"/>
+                <!--decision 1: find-->
+                <SubTree ID="FindBall" _while="decision=='find'" _autoremap="true" /> 
               </ReactiveSequence>
 
               <!--decision 2: clearing-->
@@ -55,6 +48,13 @@
 		            </ReactiveSequence>
                 <Chase _while="clearing_decision == 'clearing_chase'" vx_limit="1.0" vy_limit="0.1" vtheta_limit="1.0" dist="0.4" safe_dist="0.5" />
                 <Kick _while="clearing_decision == 'clearing_kick'" speed_limit="1.0" min_msec_kick="300" msecs_stablize="100" kick_type="one_touch" />
+              </ReactiveSequence>
+
+              <!--decision 3: hold-->
+              <ReactiveSequence _while="decision == 'hold'">
+                <PredictBallTraj R_meas="0.02" sigma_a="2.0" horizon="0.8" drop_time="0.5" vel_decay="0.3"/>
+                <CalcGoliePos />
+                <GolieMove vx_high="1.0" vx_low="-0.5" vy_high="0.8" vy_low="-0.8" Kp="2.5" Kp_theta="4.0"/>
               </ReactiveSequence>
 
             </Sequence>

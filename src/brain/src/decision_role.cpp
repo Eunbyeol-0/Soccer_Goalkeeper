@@ -20,12 +20,11 @@ NodeStatus GoalieDecide::tick()
 {
     string lastDecision;
     double ctPosx, ctPosy;
-    double clearing_min, closer_margin;
+    double closer_margin;
     double clearing_max;
     getInput("decision_in", lastDecision); 
     getInput("ctPosx", ctPosx);
     getInput("ctPosy", ctPosy);
-    getInput("clearing_min", clearing_min);
     getInput("closer_margin", closer_margin);
     getInput("clearing_max", clearing_max);
 
@@ -68,10 +67,8 @@ NodeStatus GoalieDecide::tick()
     // -----------------------------
     // 판정 기준
     // -----------------------------
-    bool ballInClearingZone =
-        (distBallToGoal > clearing_min) && // 공이 위험구역 밖에 있고
-        (distBallToGoal < clearing_max); // 공이 골대에서 너무 멀지도 않다
-
+    // 공이 골대로부터 일정 거리 이내로 들어옴
+    bool ballInClearingZone = (distBallToGoal < clearing_max); 
 	// 공이 적보다 골키퍼와 가까이에 위치한다
     bool iAmCloser = (!hasOpponent) ? true : (distGKToBall + closer_margin < distOppToBallMin); 
     // 로봇이 골대로부터 너무 멀리 나가지 않도록
@@ -80,8 +77,8 @@ NodeStatus GoalieDecide::tick()
     // -----------------------------
     // 판정 결과
     // -----------------------------
-	if (distBallToGoal < clearing_min || (lastDecision == "clearing" && !ballKnown)) {
-	    newDecision = "critical";
+	if ((!ballKnown) && (lastDecision == "clearing" || lastDecision == "find")) {
+	    newDecision = "find";
 	}
 	else if (ballInClearingZone && iAmCloser && (!StopClearing)) {
 	    newDecision = "clearing";
@@ -91,16 +88,6 @@ NodeStatus GoalieDecide::tick()
 	}
 
     setOutput("decision_out", newDecision);
-
-    // brain->log->logToScreen(
-    //     "tree/GoalieDecide",
-    //     format("Decision:%s ballKnown:%d distGK2Ball:%.2f distBall2Goal:%.2f oppMin:%.2f isolated:%d closer:%d",
-    //            newDecision.c_str(), (int)ballKnown,
-    //            distGKToBall, distBallToGoal,
-    //            (hasOpponent ? distOppToBallMin : -1.0),
-    //            (int)ballInClearingZone, (int)iAmCloser),
-    //     color
-    // );
     
     // 간략한 로그
     brain->log->logToScreen(

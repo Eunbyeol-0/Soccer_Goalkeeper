@@ -8,8 +8,7 @@
       <!-- 자기 위치 추정 -->
       <SelfLocate mode="trust_direction" />
 
-      <!-- 공 위치 알 때만 로컬라이제이션(공 위치에 대한 find상태가 아님을 의미)-->
-      <SubTree ID="Locate" _autoremap="true" _while="decision!='find'" />
+      <SubTree ID="Locate" _autoremap="true"/>
 
       <!-- 상대 킥오프 대기 -->
       <ReactiveSequence _while="wait_for_opponent_kickoff" name="상대 팀 킥오프 대기">
@@ -23,7 +22,7 @@
         <Sequence _while="ball_out">
           <SubTree ID="CamFindAndTrackBall" _autoremap="true" />
           <GoBackInField />
-          <SubTree ID="Locate" _autoremap="true" _while="decision!='find'" />
+          <SubTree ID="Locate" _autoremap="true"/>
         </Sequence>
 
         <!-- 공이 인플레이 -->

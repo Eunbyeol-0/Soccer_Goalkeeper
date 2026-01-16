@@ -37,7 +37,7 @@
               <ReactiveSequence>
                 <GoalieDecide decision_out="{decision}" decision_in="{decision}" />
                 <!--decision 1: find-->
-                <SubTree ID="FindBall" _while="decision=='find'" _autoremap="true" /> 
+                <!--<SubTree ID="FindBall" _while="decision=='find'" _autoremap="true" />-->
               </ReactiveSequence>
 
               <!--decision 2: clearing-->

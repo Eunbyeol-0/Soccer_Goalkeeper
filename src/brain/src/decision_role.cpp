@@ -20,11 +20,12 @@ NodeStatus GoalieDecide::tick()
 {
     string lastDecision;
     double ctPosx, ctPosy;
-    double closer_margin;
+    double clearing_min, closer_margin;
     double clearing_max;
     getInput("decision_in", lastDecision); 
     getInput("ctPosx", ctPosx);
     getInput("ctPosy", ctPosy);
+    getInput("clearing_min", clearing_min);
     getInput("closer_margin", closer_margin);
     getInput("clearing_max", clearing_max);
 
@@ -67,8 +68,9 @@ NodeStatus GoalieDecide::tick()
     // -----------------------------
     // 판정 기준
     // -----------------------------
-    // 공이 골대로부터 일정 거리 이내로 들어옴
-    bool ballInClearingZone = (distBallToGoal < clearing_max); 
+    bool ballInClearingZone =
+        (distBallToGoal > clearing_min) && // 공이 위험구역 밖에 있고
+        (distBallToGoal < clearing_max); // 공이 골대에서 너무 멀지도 않다
 	// 공이 적보다 골키퍼와 가까이에 위치한다
     bool iAmCloser = (!hasOpponent) ? true : (distGKToBall + closer_margin < distOppToBallMin); 
     // 로봇이 골대로부터 너무 멀리 나가지 않도록
@@ -77,8 +79,8 @@ NodeStatus GoalieDecide::tick()
     // -----------------------------
     // 판정 결과
     // -----------------------------
-	if ((!ballKnown) && (lastDecision == "clearing" || lastDecision == "find")) {
-	    newDecision = "find";
+	if (distBallToGoal < clearing_min || (lastDecision == "clearing" && !ballKnown)) {
+	    newDecision = "critical";
 	}
 	else if (ballInClearingZone && iAmCloser && (!StopClearing)) {
 	    newDecision = "clearing";

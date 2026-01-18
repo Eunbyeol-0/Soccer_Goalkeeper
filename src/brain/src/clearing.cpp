@@ -69,7 +69,7 @@ NodeStatus ClearingChase::tick() // chase.cpp의 Chase 참고
     static double circleBackDir = 1.0; 
     double dirThreshold = M_PI / 2;
     double cbDirThreshold = 0.0; 
-    if (targetType == "direct") dirThreshold *= 1.2;
+    if (targetType == "direct") dirThreshold *= 1.1;
 
     // calculate target point
     if (fabs(toPInPI(kickDir - theta_rb)) < dirThreshold) {

@@ -28,7 +28,7 @@ NodeStatus CalcClearingDir::tick() // kick.cpp의 CalcKickDir 참고
 
     brain->log->setTimeNow();
     brain->log->log(
-        "field/kick_dir",
+        "field/clearing_dir",
         rerun::Arrows2D::from_vectors({{10 * cos(brain->data->clearingDir), -10 * sin(brain->data->clearingDir)}})
             .with_origins({{bPos.x, -bPos.y}})
             .with_colors(0xFFFFFFFF)

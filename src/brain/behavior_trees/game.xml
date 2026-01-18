@@ -46,7 +46,6 @@
 
                         <ReactiveSequence _while="gc_game_state=='PLAY'" name="Play">
                             <SubTree ID="CamFindAndTrackBall" _autoremap="true" />
-
                             <ReactiveSequence>
                                 <SubTree ID="Goalkeeper" _autoremap="true" _while="player_role == 'goal_keeper'" />
                             </ReactiveSequence>

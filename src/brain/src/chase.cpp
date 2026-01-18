@@ -62,7 +62,7 @@ NodeStatus Chase::tick(){
     };
     log("ticked");
 
-    if (brain->tree->getEntry<string>("striker_state") != "chase") return NodeStatus::SUCCESS;
+    // if (brain->tree->getEntry<string>("striker_state") != "chase") return NodeStatus::SUCCESS;
     
     double vxLimit, vyLimit, vthetaLimit, dist, safeDist;
     getInput("vx_limit", vxLimit);
@@ -123,7 +123,7 @@ NodeStatus Chase::tick(){
     }
     target_r = brain->data->field2robot(target_f);
     brain->log->setTimeNow();
-    //brain->log->logBall("field/chase_target", Point({target_f.x, target_f.y, 0}), 0xFFFFFFFF, false, false);
+    brain->log->logBall("field/chase_target", Point({target_f.x, target_f.y, 0}), 0xFFFFFFFF, false, false);
             
     double targetDir = atan2(target_r.y, target_r.x);
     double distToObstacle = brain->distToObstacle(targetDir);
@@ -167,7 +167,7 @@ NodeStatus Chase::tick(){
     // chase 멈춤 조건
     bool chaseDone = brain->data->ball.range < dist * 1.2 && fabs(toPInPI(kickDir - theta_rb)) < M_PI / 3;
     if (chaseDone){
-        brain->tree->setEntry("striker_state", "adjust");
+        // brain->tree->setEntry("striker_state", "adjust");
         log("chase -> adjust");
     }
     log(format("distToObstacle = %.2f, targetDir = %.2f", distToObstacle, targetDir));

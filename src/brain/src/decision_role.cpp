@@ -37,13 +37,6 @@ NodeStatus GoalieDecide::tick()
     string newDecision = "hold";
     auto color = 0xFFFFFFFF;
 
-    // if (!ballKnown) {
-    //     newDecision = "find_ball";
-    //     color = 0x0000FFFF;
-    //     setOutput("decision_out", newDecision);
-    //     return NodeStatus::SUCCESS;
-    // }
-
     // 위치들 (필드 좌표계)
     auto bPos = brain->data->ball.posToField; 
     auto gPos = brain->data->robotPoseToField; 

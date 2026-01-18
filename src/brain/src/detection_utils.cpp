@@ -380,11 +380,11 @@ void detectProcessMarkings(const vector<GameObject> &markingObjs, const std::sha
         }
     }
     
-    log->log("field/identified_markings",
-        rerun::LineStrips2D(rerun::Collection<rerun::components::LineStrip2D>(circles))
-       .with_radii(0.01)
-       .with_labels(labels)
-       .with_colors(0xFFFFFFFF));
+    // log->log("field/identified_markings",
+    //     rerun::LineStrips2D(rerun::Collection<rerun::components::LineStrip2D>(circles))
+    //    .with_radii(0.01)
+    //    .with_labels(labels)
+    //    .with_colors(0xFFFFFFFF));
 }
 
 void detectProcessGoalposts(const vector<GameObject> &goalpostObjs, const std::shared_ptr<BrainData> &data, const std::shared_ptr<BrainLog> &log){

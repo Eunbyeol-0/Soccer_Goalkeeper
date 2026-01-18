@@ -123,7 +123,7 @@ NodeStatus Chase::tick(){
     }
     target_r = brain->data->field2robot(target_f);
     brain->log->setTimeNow();
-    brain->log->logBall("field/chase_target", Point({target_f.x, target_f.y, 0}), 0xFFFFFFFF, false, false);
+    //brain->log->logBall("field/chase_target", Point({target_f.x, target_f.y, 0}), 0xFFFFFFFF, false, false);
             
     double targetDir = atan2(target_r.y, target_r.x);
     double distToObstacle = brain->distToObstacle(targetDir);

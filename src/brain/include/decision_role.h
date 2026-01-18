@@ -41,7 +41,7 @@ public:
         return {
             InputPort<double>("ctPosx", -4.5, "골대중앙의 위치"),
             InputPort<double>("ctPosy", 0.0, "골대중앙의 위치"),
-            InputPort<double>("chase_threshold", 0.5, "이 거리보다 멀면 공 추격(Chase) 동작을 실행"),
+            InputPort<double>("chase_threshold", 0.3, "이 거리보다 멀면 공 추격(Chase) 동작을 실행"),
             InputPort<string>("decision_in", "", "이전 틱에서의 decision 값을 읽기 위해 사용"),
             OutputPort<string>("decision_out"),
         };

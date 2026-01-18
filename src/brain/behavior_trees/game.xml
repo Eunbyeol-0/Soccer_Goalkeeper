@@ -39,11 +39,19 @@
                         </ReactiveSequence>
 
                         <ReactiveSequence _while="gc_game_state=='SET'" name="Set">
-                            <SetVelocity x="0.0" y="0.0" theta="0.0" />
+                            <!--<SetVelocity x="0.0" y="0.0" theta="0.0" />-->
                             <SubTree ID="CamFindAndTrackBall" _autoremap="true" /> 
                             <SubTree ID="Locate" _autoremap="true" />
-                            <!--노드 검증용-->
-                            <PredictBallTraj R_meas="0.02" sigma_a="2.0" horizon="0.8" vel_decay="0.3"/>
+                            <!--검증용-->
+                            <ReactiveSequence>
+                                 <GoalieClearingDecide decision_out="{clearing_decision}" decision_in="{clearing_decision}" />
+                            </ReactiveSequence>
+                            <ReactiveSequence _while="clearing_decision == 'clearing_chase'">
+                                <CalcClearingDir/>
+                                <!-- <ClearingChase vx_limit="1.0" vy_limit="0.1" vtheta_limit="1.0" dist="0.2" safeDist="0.5" /> -->
+                            </ReactiveSequence>
+                            <!-- <Kick _while="clearing_decision == 'clearing_kick'" speed_limit="1.0" min_msec_kick="300" msecs_stablize="100" kick_type="one_touch" /> -->
+                            <SetVelocity _while="clearing_decision == 'clearing_kick'" x="0.0" y="0.0" theta="0.0" />
                         </ReactiveSequence>
 
                         <ReactiveSequence _while="gc_game_state=='PLAY'" name="Play">

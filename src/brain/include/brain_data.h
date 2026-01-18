@@ -36,7 +36,8 @@ struct BrainData {
 
     /* -------------------------------------------------------------------------------- 게임 상태 관련 파라미터 -------------------------------------------------------------------- */
     bool isDirectShoot = false; // 패널티킥에서 직접 슛팅으로 해도 되는지
-    double kickDir = 0.; // 킥 방향
+    double kickDir = 0.0; // 킥 방향
+    double clearingDir = 0.0;
     string kickType = "shoot"; // 킥 타입
 
     rclcpp::Time timeLastLogSave; 

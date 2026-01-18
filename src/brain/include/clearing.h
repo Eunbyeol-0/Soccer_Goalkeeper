@@ -17,8 +17,8 @@ public:
     static PortsList providedPorts()
     {
         return {
-            InputPort<double>("goalx", -5.25, "골대 내부 중앙의 위치")
-            InputPort<double>("goalx", 0.0, "골대 내부 중앙의 위치")
+            InputPort<double>("goalx", -5.25, "골대 내부 중앙의 위치"),
+            InputPort<double>("goaly", 0.0, "골대 내부 중앙의 위치")
         };
     }
 
@@ -43,7 +43,7 @@ public:
             InputPort<double>("vtheta_limit", 1.0, "vtheta의 최대 속도"),
             InputPort<double>("p_gain", 1.0, "P 제어의 gain"),
             InputPort<double>("dist", 0.3, "공으로부터 떨어질 목표 거리"),
-            InputPort<double>("safe_dist", 2.0, "원형으로 돌아 들어갈 때의 안전 반경"),
+            InputPort<double>("safeDist", 2.0, "원형으로 돌아 들어갈 때의 안전 반경"),
         };
     }
 

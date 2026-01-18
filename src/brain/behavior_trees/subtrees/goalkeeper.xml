@@ -45,7 +45,7 @@
                   <PredictBallTraj R_meas="0.02" sigma_a="2.0" horizon="0.8" vel_decay="0.3"/>
 		              <GoalieClearingDecide decision_out="{clearing_decision}" decision_in="{clearing_decision}" />
 		            </ReactiveSequence>
-                <Chase _while="clearing_decision == 'clearing_chase'" vx_limit="1.0" vy_limit="0.1" vtheta_limit="1.0" dist="0.4" safe_dist="0.5" />
+                <Chase _while="clearing_decision == 'clearing_chase'" vx_limit="1.0" vy_limit="0.5" vtheta_limit="1.0" dist="0.2" safe_dist="0.4" />
                 <Kick _while="clearing_decision == 'clearing_kick'" speed_limit="1.0" min_msec_kick="300" msecs_stablize="100" kick_type="one_touch" />
               </ReactiveSequence>
 
@@ -57,7 +57,7 @@
                   </ReactiveSequence>
                   <ReactiveSequence _while="clearing_decision == 'clearing_chase'">
                     <CalcClearingDir/>
-                    <ClearingChase vx_limit="0.8" vy_limit="0.5" vtheta_limit="1.0" dist="0.2" safeDist="0.5" />
+                    <ClearingChase vx_limit="1.0" vy_limit="0.5" vtheta_limit="1.0" dist="0.2" safeDist="0.4" p_gain="2.5"/>
                   </ReactiveSequence>
                   <Kick _while="clearing_decision == 'clearing_kick'" speed_limit="1.0" min_msec_kick="300" msecs_stablize="100" kick_type="one_touch" />
               </ReactiveSequence>

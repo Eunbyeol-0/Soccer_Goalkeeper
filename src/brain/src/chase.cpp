@@ -60,7 +60,7 @@ NodeStatus Chase::tick(){
         brain->log->setTimeNow();
         brain->log->log("debug/Chase4", rerun::TextLog(msg));
     };
-    log("ticked");
+    // log("ticked");
 
     // if (brain->tree->getEntry<string>("striker_state") != "chase") return NodeStatus::SUCCESS;
     

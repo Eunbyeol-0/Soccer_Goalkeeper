@@ -41,6 +41,12 @@ NodeStatus CalcClearingDir::tick() // kick.cpp의 CalcKickDir 참고
 
 NodeStatus ClearingChase::tick() // chase.cpp의 Chase 참고
 {
+    auto log = [=](string msg) {
+        brain->log->setTimeNow();
+        brain->log->log("debug/Chase4", rerun::TextLog(msg));
+    };
+    log("ticked");
+
     double vxLimit, vyLimit, vthetaLimit, dist, safeDist;
     getInput("vx_limit", vxLimit);
     getInput("vy_limit", vyLimit);
@@ -48,7 +54,7 @@ NodeStatus ClearingChase::tick() // chase.cpp의 Chase 참고
     getInput("dist", dist); // 공으로부터 떨어질 목표 거리
     getInput("safeDist", safeDist); // 원형으로 돌아 들어갈 때의 안전 반경
 
-		// 공 근처에서 속도 줄이기
+	// 공 근처에서 속도 줄이기
     if (brain->data->ball.range < brain->config->nearBallRange) 
     {
         vxLimit = min(brain->config->nearBallSpeedLimit, vxLimit);

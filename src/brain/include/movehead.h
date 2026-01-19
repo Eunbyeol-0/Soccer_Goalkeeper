@@ -158,4 +158,6 @@ public:
 
 private:
     Brain *brain;
+    double smoothHeadYaw = 0.0;
+    double smoothHeadPitch = 0.0;
 };

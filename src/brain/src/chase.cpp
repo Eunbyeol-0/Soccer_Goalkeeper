@@ -170,7 +170,7 @@ NodeStatus Chase::tick(){
         // brain->tree->setEntry("striker_state", "adjust");
         log("chase -> adjust");
     }
-    log(format("distToObstacle = %.2f, targetDir = %.2f", distToObstacle, targetDir));
+    // log(format("distToObstacle = %.2f, targetDir = %.2f", distToObstacle, targetDir));
     
     // brain->client->setVelocity(smoothVx, smoothVy, smoothVtheta, false, false, false);
     brain->client->setVelocity(vx, vy, vtheta, false, false, false);

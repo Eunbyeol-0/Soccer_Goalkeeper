@@ -97,7 +97,7 @@ NodeStatus Chase::tick(){
 
     double vx, vy, vtheta;
     Pose2D target_f, target_r; 
-    static string targetType = "direct"; 
+    string targetType = "direct"; 
     static double circleBackDir = 1.0; 
     double dirThreshold = M_PI / 2;
     if (targetType == "direct") dirThreshold *= 1.2;
@@ -105,18 +105,18 @@ NodeStatus Chase::tick(){
 
     // calculate target point
     if (fabs(toPInPI(kickDir - theta_rb)) < dirThreshold) {
-        log("targetType = direct");
+        // log("targetType = direct");
         targetType = "direct";
         
         target_f.x = ballPos.x - dist * cos(kickDir);
         target_f.y = ballPos.y - dist * sin(kickDir);
     } 
     else {
-        // targetType = "circle_back";
+        targetType = "circle_back";
         double cbDirThreshold = 0.0; 
         cbDirThreshold -= 0.2 * circleBackDir; 
         circleBackDir = toPInPI(theta_br - kickDir) > cbDirThreshold ? 1.0 : -1.0;
-        log(format("targetType = circle_back, circleBackDir = %.1f", circleBackDir));
+        // log(format("targetType = circle_back, circleBackDir = %.1f", circleBackDir));
         double tanTheta = theta_br + circleBackDir * acos(min(1.0, safeDist/max(ballRange, 1e-5))); 
         target_f.x = ballPos.x + safeDist * cos(tanTheta);
         target_f.y = ballPos.y + safeDist * sin(tanTheta);

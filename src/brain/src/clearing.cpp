@@ -65,7 +65,7 @@ NodeStatus ClearingChase::tick() // chase.cpp의 Chase 참고
 
     double vx, vy, vtheta;
     Pose2D target_f, target_r; 
-    static string targetType = "direct"; 
+    string targetType = "direct"; 
     static double circleBackDir = 1.0; 
     double dirThreshold = M_PI / 2;
     double cbDirThreshold = 0.0; 
@@ -74,6 +74,7 @@ NodeStatus ClearingChase::tick() // chase.cpp의 Chase 참고
     // calculate target point
     if (fabs(toPInPI(kickDir - theta_rb)) < dirThreshold) {
         targetType = "direct";
+        log("targetType = direct");
         target_f.x = ballPos.x - dist * cos(kickDir);
         target_f.y = ballPos.y - dist * sin(kickDir);
     } 
@@ -81,6 +82,7 @@ NodeStatus ClearingChase::tick() // chase.cpp의 Chase 참고
         targetType = "circle_back";
         cbDirThreshold -= 0.2 * circleBackDir; 
         circleBackDir = toPInPI(theta_br - kickDir) > cbDirThreshold ? 1.0 : -1.0;
+        log(format("targetType = circle_back, circleBackDir = %.1f", circleBackDir));
         double tanTheta = theta_br + circleBackDir * acos(min(1.0, safeDist/max(ballRange, 1e-5))); 
         target_f.x = ballPos.x + safeDist * cos(tanTheta);
         target_f.y = ballPos.y + safeDist * sin(tanTheta);

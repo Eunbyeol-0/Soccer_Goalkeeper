@@ -57,7 +57,7 @@
                   </ReactiveSequence>
                   <ReactiveSequence _while="clearing_decision == 'clearing_chase'">
                     <CalcClearingDir/>
-                    <ClearingChase vx_limit="1.2" vy_limit="0.5" vtheta_limit="1.0" dist="0.15" safeDist="0.35" p_gain="3.0"/>
+                    <ClearingChase vx_limit="1.2" vy_limit="0.5" vtheta_limit="1.0" dist="0.15" safeDist="0.35" p_gain="2.0"/>
                   </ReactiveSequence>
                   <Kick _while="clearing_decision == 'clearing_kick'" speed_limit="1.2" min_msec_kick="300" msecs_stablize="100" kick_type="one_touch" />
               </ReactiveSequence>

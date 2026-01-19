@@ -5,6 +5,7 @@
      <Sequence name="root">
         <ReactiveSequence>
             <!-- <GoBackInField /> -->
+            <TurnOnSpot rad="3.14"  towards_ball="true"/>
             <CamFastScan />
         </ReactiveSequence>
         <TurnOnSpot rad="3.14"  towards_ball="true"/>

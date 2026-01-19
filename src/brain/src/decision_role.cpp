@@ -61,7 +61,7 @@ NodeStatus GoalieDecide::tick()
     // 판정 기준
     // -----------------------------
     // 공이 골대로부터 일정 거리 이내로 들어옴
-    bool ballInClearingZone = (distBallToGoal < clearing_max); 
+    bool ballInClearingZone = (distBallToGoal < clearing_max * (lastDecision == "normal_clearing" ? 1.1 : 1.0)); 
 	// 공이 적보다 골키퍼와 가까이에 위치한다
     bool iAmCloser = (!hasOpponent) ? true : (distGKToBall + closer_margin < distOppToBallMin); 
     // 로봇이 골대로부터 너무 멀리 나가지 않도록
@@ -114,7 +114,7 @@ NodeStatus GoalieClearingDecide::tick()
     std::string newDecision;
 
     // 멀면 chase 유지(히스테리시스 약간)
-    if (ballRange > chaseRangeThreshold * (lastDecision == "chase" ? 0.9 : 1.0)) {
+    if (ballRange > chaseRangeThreshold * (lastDecision == "clearing_chase" ? 0.9 : 1.0)) {
         newDecision = "clearing_chase";
         color = 0xFFFFFFFF;
     } else {

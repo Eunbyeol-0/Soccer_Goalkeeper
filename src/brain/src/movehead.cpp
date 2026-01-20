@@ -183,7 +183,7 @@ NodeStatus TurnOnSpot::onStart()
     getInput("towards_ball", towardsBall);
     if (towardsBall) {
         double ballPixX = (brain->data->ball.boundingBox.xmin + brain->data->ball.boundingBox.xmax) / 2;
-        _angle = fabs(_angle) * (ballPixX < brain->config->camPixX / 2 ? 1 : -1);
+        _angle = fabs(_angle) * (ballPixX < brain->config->camPixX / 2 ? -1 : 1);
     }
 
     brain->client->setVelocity(0, 0, _angle, false, false, true);

@@ -100,7 +100,7 @@ public:
     {
         return {
             InputPort<double>("rad", 0, "회전할 각도, 왼쪽으로 회전할 때는 양수"),
-            InputPort<bool>("towards_ball", false, "true일 때, rad의 부호를 무시하고 마지막에 볼을 보았던 방향으로 회전")
+            InputPort<bool>("towards_ball", true, "true일 때, rad의 부호를 무시하고 마지막에 볼을 보았던 방향으로 회전")
         };
     }
 

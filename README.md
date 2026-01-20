@@ -7,7 +7,7 @@
 Hi 👋 We are Inha-United !
 Inha-United is a team competing in the RoboCup Soccer Humanoid League.
 
-This repository presents algorithms and methodologies for goalkeeper behavior decision-making in autonomous humanoid soccer, based on the BehaviorTree.CPP framework.
+This repository focuses on algorithms and methodologies for goalkeeper behavior decision-making in autonomous humanoid soccer, based on the BehaviorTree.CPP framework.
 
 Starting from the demo provided by Booster Robotics, we have modularized the system, extended its functionality, and continuously improved its performance through our own research and development efforts.
 
@@ -15,13 +15,13 @@ Starting from the demo provided by Booster Robotics, we have modularized the sys
 The goalkeeper’s decision-making framework is composed of three high-level states: Hold, Clearing, and Find.
 
 * Hold:
-In this state, the robot continuously adjusts its position to minimize the opponent’s available shooting angle, maintaining optimal defensive coverage of the goal.
+In this state, the robot predicts the ball trajectory and continuously computes and moves to the optimal position that minimizes the opponent’s shooting angle.
 
 * Clearing:
-When the ball enters a critical area, the goalkeeper performs a clearing action, kicking the ball away toward the direction opposite the goal to reduce immediate danger.
+When the ball enters a critical area, the goalkeeper performs a clearing action, kicking the ball away toward the direction opposite the goal.
 
 * Find:
-If the ball position is lost, the robot enters the Find state. It employs an active search strategy that combines head rotation and body rotation to obtain an omnidirectional field of view and re-locate the ball efficiently.
+If the ball position is lost, the robot combines head rotation and body rotation to obtain an omnidirectional field of view and re-locate the ball efficiently.
 
 The detailed decision-making process is illustrated in the figure below.
 <img src="images/goalkeeper_bt.png" width="800" height="" />

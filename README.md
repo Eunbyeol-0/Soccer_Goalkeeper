@@ -4,7 +4,7 @@
      width="400" height="" />
 </p>
 
-Hi 👋 We are Inha-United !
+Hi 👋 We are Inha-United!
 Inha-United is a team competing in the RoboCup Soccer Humanoid League.
 
 This repository presents algorithms and methodologies for goalkeeper behavior decision-making in autonomous humanoid soccer, based on the BehaviorTree.CPP framework.

@@ -24,7 +24,7 @@ When the ball enters a critical area, the goalkeeper performs a clearing action,
 If the ball position is lost, the robot enters the Find state. It employs an active search strategy that combines head rotation and body rotation to obtain an omnidirectional field of view and re-locate the ball efficiently.
 
 The detailed decision-making process is illustrated in the figure below.
-<img src="images/goalkeeper_bt.png" width="400" height="" />
+<img src="images/goalkeeper_bt.png" width="800" height="" />
 
 ## Installation & Run
 ```bash

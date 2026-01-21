@@ -1,4 +1,4 @@
-# INHA-GoalKeeper
+# Soccer-Goalkeeper
 <p align="center">
 <img src="https://raw.githubusercontent.com/Inha-united-soccer/.github/main/profile/assets/inha_logo.jpeg"
      width="400" height="" />

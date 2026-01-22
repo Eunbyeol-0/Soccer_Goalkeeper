@@ -140,7 +140,7 @@ NodeStatus Chase::tick(){
 
     else {
         
-        double p_gain = 2.0;
+        double p_gain = 3.0;
         vx = target_r.x * p_gain;
         vy = target_r.y * p_gain;
 

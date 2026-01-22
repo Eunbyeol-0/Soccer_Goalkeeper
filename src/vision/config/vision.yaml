@@ -56,8 +56,8 @@ segmentation_model:
   confidence_threshold: 0.3
   nms_threshold: 0.9
 
-use_depth: true
-use_imu: false # imu로 cartesian 좌표 보정할 지 
+use_depth: false
+use_imu: true # imu로 cartesian 좌표 보정할 지 
 
 ball_pose_estimator:
   use_depth: false # 볼 위치 추정 시 depth 사용할지
@@ -90,4 +90,4 @@ calibration:
     reprojection_error: 3.5616553263245252
 
 misc:
-  save_data_nonstationary: true
+  save_data_nonstationary: false

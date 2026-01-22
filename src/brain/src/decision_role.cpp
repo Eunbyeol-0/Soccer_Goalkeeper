@@ -61,7 +61,7 @@ NodeStatus GoalieDecide::tick()
     // 판정 기준
     // -----------------------------
     // 공이 골대로부터 일정 거리 이내로 들어옴
-    bool ballInClearingZone = (distBallToGoal < clearing_max * (lastDecision == "normal_clearing" ? 1.2 : 1.0)); 
+    bool ballInClearingZone = (distBallToGoal < clearing_max * (lastDecision == "normal_clearing" ? 1.5 : 1.0)); 
 	// 공이 적보다 골키퍼와 가까이에 위치한다
     bool iAmCloser = (!hasOpponent) ? true : (distGKToBall + closer_margin < distOppToBallMin); 
     // 로봇이 골대로부터 너무 멀리 나가지 않도록

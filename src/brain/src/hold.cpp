@@ -433,7 +433,7 @@ NodeStatus GolieMove::tick(){
     double controly = -vx*sin(gtheta) + vy*cos(gtheta);
     
     // 가까워질수록 속도가 줄어들도록
-    double minFactor = 0.4; 
+    double minFactor = 2.0; 
     double linearFactor = Kp / (1.0 + exp(-3.0 * (dist - 0.3)));
     linearFactor = std::max(linearFactor, minFactor);
     controlx *= linearFactor;

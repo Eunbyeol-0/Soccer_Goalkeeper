@@ -433,9 +433,9 @@ NodeStatus GolieMove::tick(){
     double controly = -vx*sin(gtheta) + vy*cos(gtheta);
     
     // 가까워질수록 속도가 줄어들도록
-    double minFactor = 2.0; 
-    double linearFactor = Kp / (1.0 + exp(-3.0 * (dist - 0.3)));
-    linearFactor = std::max(linearFactor, minFactor);
+    double minFactor = 1.0;          
+    double linearFactor = Kp / (1.0 + exp(-2.0 * (dist - 0.1)));
+    linearFactor = std::max(linearFactor, minFactor);   
     controlx *= linearFactor;
     controly *= linearFactor;
 
@@ -455,7 +455,7 @@ NodeStatus GolieMove::tick(){
         vtheta = 0;
     }
     
-    brain->client->setVelocity(controlx, controly, vtheta, false, false, false);
+    brain->client->setVelocity(controlx, controly, vtheta, true, true, true);
     return NodeStatus::SUCCESS;
 }
 
@@ -500,7 +500,7 @@ NodeStatus GolieInitPos::tick(){
       controltheta = errortheta * Kp;
     }
     else if(dist < turn_Threshold && dist > stop_Threshold){ // 선회
-		  controlx = errorx*cos(gtheta) + errory*sin(gtheta);
+	    controlx = errorx*cos(gtheta) + errory*sin(gtheta);
       controly = -errorx*sin(gtheta) + errory*cos(gtheta);
       controlx *= linearFactor;
       controly *= linearFactor;

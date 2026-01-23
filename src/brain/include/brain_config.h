@@ -66,8 +66,8 @@ public:
     double headYawLimitLeft = 1.1; // 머리 제어
     double headYawLimitRight = -1.1; 
     double headPitchLimitUp = 0.45; 
-    double vxLimit = 0.8; // 속도 제한
-    double vyLimit = 0.4;
+    double vxLimit = 1.0; // 속도 제한
+    double vyLimit = 1.0;
     double vthetaLimit = 1.0;
 
     double vxFactor; //crabWalk에 사용

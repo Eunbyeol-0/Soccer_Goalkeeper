@@ -145,7 +145,7 @@ NodeStatus CamTrackBall::tick(){
         logTrackingBox(0xFF0000FF, label);  // 초록색 박스로 바뀜
     }
 
-    brain->client->moveHead(0.7*pitch, 0.7*yaw);
+    brain->client->moveHead(0.5*pitch, 0.5*yaw);
     return NodeStatus::SUCCESS;
 }
 

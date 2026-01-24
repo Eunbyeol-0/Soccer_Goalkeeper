@@ -4,6 +4,7 @@
     <include path="./subtrees/locate.xml" />
     <include path="./subtrees/cam_find_and_track_ball.xml" />
     <include path="./subtrees/goalkeeper.xml" />
+    <include path="./subtrees/auto_getup_and_locate.xml" />
 
     <!-- 시작 -->
     <BehaviorTree ID="MainTree">
@@ -46,6 +47,7 @@
 
                         <ReactiveSequence _while="gc_game_state=='PLAY'" name="Play">
                             <SubTree ID="CamFindAndTrackBall" _autoremap="true" />
+                            <SubTree ID="AutoGetUpAndLocate"/>
                             <ReactiveSequence>
                                 <SubTree ID="Goalkeeper" _autoremap="true" _while="player_role == 'goal_keeper'" />
                             </ReactiveSequence>

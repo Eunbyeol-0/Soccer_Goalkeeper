@@ -46,6 +46,7 @@
 #include "decision_role.h"
 #include "hold.h"
 #include "clearing.h"
+#include "recovery.h"
 
 
 // Forward declaration to avoid circular dependency
@@ -95,7 +96,7 @@ public:
     void registerAdjustNodes(BT::BehaviorTreeFactory &factory){RegisterAdjustNodes(factory, this);}
     void registerHoldNodes(BT::BehaviorTreeFactory &factory){RegisterHoldNodes(factory, this);}
     void registerClearingNodes(BT::BehaviorTreeFactory &factory){RegisterClearingNodes(factory, this);}
-
+    void registerRecoveryNodes(BT::BehaviorTreeFactory &factory){RegisterRecoveryNodes(factory, this);}
 
     
     // ROS callback 함수

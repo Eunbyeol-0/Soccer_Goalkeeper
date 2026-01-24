@@ -419,7 +419,7 @@ NodeStatus GolieMove::tick(){
     double theta = atan2(vy, vx);
     double dist = norm(vx, vy);
 
-    double Kp_theta = 4.0;
+    double Kp_theta = 3.0;
     double Kp = 2.0;
     getInput("Kp_theta", Kp_theta); 
     getInput("Kp", Kp); 
@@ -427,15 +427,18 @@ NodeStatus GolieMove::tick(){
     double vtheta;
     vtheta = toPInPI((theta - gtheta) + (targettheta - theta));
     vtheta *= Kp_theta;
+    vtheta = cap(vtheta, 0.4, -0.4);
 
     // map 좌표계의 제어명령 vx,vy를 ego좌표계 제어명령으로 변환
     double controlx = vx*cos(gtheta) + vy*sin(gtheta);
     double controly = -vx*sin(gtheta) + vy*cos(gtheta);
     
-    // 가까워질수록 속도가 줄어들도록
-    double minFactor = 1.0;          
-    double linearFactor = Kp / (1.0 + exp(-2.0 * (dist - 0.1)));
-    linearFactor = std::max(linearFactor, minFactor);   
+    double k_near = 0.20;  // 0~0.1에서는 Kp의 20%만
+    double rise = 10.0;    // 0.05 이후 상승 속도
+    double s = std::max(0.0, dist - 0.05);
+    double factor = k_near + (1.0 - k_near) * (1.0 - exp(-rise * s));
+    double linearFactor = Kp * factor;
+
     controlx *= linearFactor;
     controly *= linearFactor;
 

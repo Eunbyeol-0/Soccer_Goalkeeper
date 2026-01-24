@@ -29,9 +29,9 @@ public:
             InputPort<double>("ctPosx", -4.5, "골대중앙의 위치"),
             InputPort<double>("ctPosy", 0.0, "골대중앙의 위치"),
             // 감속 모델에 사용
-            InputPort<double>("a_min", 0.8, "고속에서 감속(작게)  (m/s^2)"),
-            InputPort<double>("a_max", 0.8, "저속에서 감속(크게)  (m/s^2)"),
-            InputPort<double>("k_av", 0.8, "v에 따른 전이 강도"),
+            InputPort<double>("a_min", 0.6, "고속에서 감속(작게)  (m/s^2)"),
+            InputPort<double>("a_max", 0.6, "저속에서 감속(크게)  (m/s^2)"),
+            InputPort<double>("k_av", 0.6, "v에 따른 전이 강도"),
         };
     }
 

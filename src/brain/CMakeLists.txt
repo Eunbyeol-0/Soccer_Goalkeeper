@@ -60,6 +60,7 @@ set(SOURCE_FILES
   src/decision_role.cpp
   src/hold.cpp
   src/clearing.cpp
+  src/recovery.cpp
 )
 
 add_executable(brain_node ${SOURCE_FILES})

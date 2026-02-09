@@ -8,7 +8,6 @@
     <ReactiveSequence>
       <!-- 자기 위치 추정 -->
       <SelfLocate mode="trust_direction" />
-
       <SubTree ID="Locate" _autoremap="true"/>
 
       <!-- 상대 킥오프 대기 -->
@@ -59,7 +58,7 @@
                   </ReactiveSequence>
                   <ReactiveSequence _while="clearing_decision == 'clearing_chase'">
                     <CalcClearingDir/>
-                    <ClearingChase vx_limit="0.7" vy_limit="0.5" vtheta_limit="1.0" dist="0.15" safeDist="0.35" p_gain="2.0"/>
+                    <ClearingChase vx_limit="0.7" vy_limit="0.5" vtheta_limit="1.0" dist="0.15" safeDist="0.35" p_gain="3.0"/>
                   </ReactiveSequence>
                   <Kick _while="clearing_decision == 'clearing_kick'" speed_limit="1.2" min_msec_kick="300" msecs_stablize="0" />
               </ReactiveSequence>
@@ -68,7 +67,7 @@
               <ReactiveSequence _while="decision == 'hold'">
                 <PredictBallTraj R_meas="0.015" sigma_a="2.5" horizon="0.6" drop_time="0.5" vel_decay="0.3"/>
                 <CalcGoliePos />
-                <GolieMove vx_high="1.0" vx_low="-0.4" vy_high="1.0" vy_low="-1.0" Kp="3.0" Kp_theta="3.0"/>
+                <GolieMove vx_high="1.0" vx_low="-0.4" vy_high="1.0" vy_low="-1.0" Kp="2.0" Kp_theta="2.0"/>
               </ReactiveSequence>
 
             </Sequence>

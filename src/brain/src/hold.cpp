@@ -419,7 +419,7 @@ NodeStatus GolieMove::tick(){
     double theta = atan2(vy, vx);
     double dist = norm(vx, vy);
 
-    double Kp_theta = 3.0;
+    double Kp_theta = 2.0;
     double Kp = 2.0;
     getInput("Kp_theta", Kp_theta); 
     getInput("Kp", Kp); 
@@ -433,14 +433,25 @@ NodeStatus GolieMove::tick(){
     double controlx = vx*cos(gtheta) + vy*sin(gtheta);
     double controly = -vx*sin(gtheta) + vy*cos(gtheta);
     
-    double k_near = 0.20;  // 0~0.1에서는 Kp의 20%만
+    // -------------------------------------------------
+    // 공이 정지 상태일 때 안정성을 위해 (+ P제어)
+    double k_near = 0.20;  // 0~0.05에서는 Kp의 20%만
     double rise = 10.0;    // 0.05 이후 상승 속도
     double s = std::max(0.0, dist - 0.05);
     double factor = k_near + (1.0 - k_near) * (1.0 - exp(-rise * s));
     double linearFactor = Kp * factor;
-
     controlx *= linearFactor;
     controly *= linearFactor;
+
+    // 선속도, 각속도 결합
+    double heading_err = toPInPI(targettheta - gtheta);
+    // double h = std::max(0.0, cos(heading_err));
+    // double hscale = std::clamp(std::sqrt(h), 0.5, 1.0);
+    double hscale = std::clamp(cos(heading_err), 0.5, 1.0); // 헤딩 오차가 클수록 선형 속도를 줄임
+    controlx *= hscale;
+    controly *= hscale;
+
+    // -------------------------------------------------
 
     // 속도 제한
     double vx_high, vx_low;

@@ -1,10 +1,10 @@
 <root BTCPP_format="4">
     <!-- 포함될 BT 파일들 -->
-    <!--<include path="./dribble.xml" />-->
     <include path="./subtrees/locate.xml" />
     <include path="./subtrees/cam_find_and_track_ball.xml" />
     <include path="./subtrees/goalkeeper.xml" />
     <include path="./subtrees/auto_getup_and_locate.xml" />
+    <include path="./subtrees/goalkeeper_setpiece.xml" />
 
     <!-- 시작 -->
     <BehaviorTree ID="MainTree">
@@ -19,14 +19,12 @@
                 </ReactiveSequence>
 
                 <ReactiveSequence _while="!gc_is_under_penalty" name="No_Penalty">
-                    
                     <ReactiveSequence _while="gc_game_sub_state_type=='TIMEOUT'" name="Timeout">
                         <SetVelocity x="0.0" y="0.0" theta="0.0" />
                         <SelfLocateEnterField />
                     </ReactiveSequence>
 
                     <ReactiveSequence _while="gc_game_sub_state_type=='NONE'" name="Normal_Game">
-                        
                         <ReactiveSequence _while="gc_game_state=='INITIAL'" name="Initial">
                             <CamScanField _while="!odom_calibrated"/>
                             <SubTree ID="CamFindAndTrackBall" _while="odom_calibrated" _autoremap="true" />
@@ -34,7 +32,6 @@
                         </ReactiveSequence>
 
                         <ReactiveSequence _while="gc_game_state=='READY'" name="Ready">
-                            <SubTree ID="CamFindAndTrackBall" _autoremap="true" /> 
                             <GolieInitPos vx_limit="0.3" vy_limit="0.15"/>
                             <SubTree ID="Locate" _autoremap="true" />
                         </ReactiveSequence>
@@ -57,21 +54,11 @@
                         <ReactiveSequence _while="gc_game_state=='END'" name="End">
                             <SetVelocity x="0.0" y="0.0" theta="0.0" />
                         </ReactiveSequence>
-
-                    </ReactiveSequence>
-                    <ReactiveSequence _while="gc_game_sub_state_type=='FREE_KICK' && gc_game_state=='PLAY'" name="Free_Kick">
-                         <SetVelocity x="0.0" y="0.0" theta="0.0" />
-                         <SubTree ID="Locate" _autoremap="true" />
                     </ReactiveSequence>
 
-                    <ReactiveSequence _while="gc_game_sub_state=='GET_READY'">
-                        <SubTree ID="Locate" _autoremap="true" _while="ball_location_known" />
-                    </ReactiveSequence>
-
-                    <ReactiveSequence _while="gc_game_sub_state=='SET'">
-                        <SubTree ID="CamFindAndTrackBall" _autoremap="true" />
-                        <SubTree ID="Locate" _autoremap="true" _while="ball_location_known" />
-                        <SetVelocity />
+                    <!-- setpiece는 서브트리에서 처리 -->
+                    <ReactiveSequence _while="gc_game_sub_state_type != 'TIMEOUT' && gc_game_sub_state_type != 'NONE' && gc_game_state=='PLAY'" name="SetPiece">
+                            <SubTree ID="goalkeeper_setpiece" />
                     </ReactiveSequence>
 
                 </ReactiveSequence>

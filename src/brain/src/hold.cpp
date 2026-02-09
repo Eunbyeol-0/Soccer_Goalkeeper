@@ -373,6 +373,36 @@ NodeStatus CalcGoliePos::tick(){
     double tx = cx + r * ux;
     double ty = cy + r * uy;
     
+    // ----------------------------------------
+    // goal pose 저역 통과 필터
+    double alpha = 0.30;           // 0~1 (작을수록 더 부드러움)
+    double snap_dist = 0.15;       // 이 이상 크게 바뀌면 바로 스냅
+    getInput("alpha", alpha);
+    getInput("snap_dist", snap_dist);
+
+    Pose2D filtered_GoliePos = brain->data->GoliePos;
+
+    if (!has_filtered_) { // 초기화
+    filtered_GoliePos.x = tx;
+    filtered_GoliePos.y = ty;
+    has_filtered_ = true; }
+    else {
+        const double dx_f = tx - filtered_GoliePos.x;
+        const double dy_f = ty - filtered_GoliePos.y;
+        const double jump = norm(dx_f, dy_f);
+
+        if (jump > snap_dist) { // 목표가 크게 바뀐 경우: 즉시 따라감
+            filtered_GoliePos.x = tx;
+            filtered_GoliePos.y = ty;
+        } else {
+            filtered_GoliePos.x = (1.0 - alpha) * filtered_GoliePos.x + alpha * tx;
+            filtered_GoliePos.y = (1.0 - alpha) * filtered_GoliePos.y + alpha * ty;
+        }
+    }
+    tx = filtered_GoliePos.x;
+    ty = filtered_GoliePos.y;
+    //-----------------------------------------
+
     // Pose2D로의 변환 및 저장
     Pose2D GoliePos;
     GoliePos.x = tx; GoliePos.y = ty;  
@@ -420,9 +450,10 @@ NodeStatus GolieMove::tick(){
     double dist = norm(vx, vy);
 
     double Kp_theta = 2.0;
-    double Kp = 2.0;
+    double Kp_x = 1.5, Kp_y = 2.5;
     getInput("Kp_theta", Kp_theta); 
-    getInput("Kp", Kp); 
+    getInput("Kp_x", Kp_x); 
+    getInput("Kp_y", Kp_y); 
 
     double vtheta;
     vtheta = toPInPI((theta - gtheta) + (targettheta - theta));
@@ -434,14 +465,17 @@ NodeStatus GolieMove::tick(){
     double controly = -vx*sin(gtheta) + vy*cos(gtheta);
     
     // -------------------------------------------------
-    // 공이 정지 상태일 때 안정성을 위해 (+ P제어)
-    double k_near = 0.20;  // 0~0.05에서는 Kp의 20%만
-    double rise = 10.0;    // 0.05 이후 상승 속도
-    double s = std::max(0.0, dist - 0.05);
-    double factor = k_near + (1.0 - k_near) * (1.0 - exp(-rise * s));
-    double linearFactor = Kp * factor;
-    controlx *= linearFactor;
-    controly *= linearFactor;
+    // // 공이 정지 상태일 때 안정성을 위해 (+ P제어)
+    // double k_near = 0.3;  // 0~0.05에서는 Kp의 30%만
+    // double rise = 10.0;    // 0.05 이후 상승 속도
+    // double s = std::max(0.0, dist - 0.05);
+    // double factor = k_near + (1.0 - k_near) * (1.0 - exp(-rise * s));
+    // double linearFactor_x = Kp_x * factor;
+    // double linearFactor_y = Kp_y * factor;
+    // controlx *= linearFactor_x;
+    // controly *= linearFactor_y;
+    controlx *= Kp_x;
+    controly *= Kp_y;
 
     // 선속도, 각속도 결합
     double heading_err = toPInPI(targettheta - gtheta);
@@ -450,7 +484,6 @@ NodeStatus GolieMove::tick(){
     double hscale = std::clamp(cos(heading_err), 0.5, 1.0); // 헤딩 오차가 클수록 선형 속도를 줄임
     controlx *= hscale;
     controly *= hscale;
-
     // -------------------------------------------------
 
     // 속도 제한

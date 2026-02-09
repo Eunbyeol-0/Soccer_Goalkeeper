@@ -58,6 +58,7 @@ struct BrainData {
     
     /* ---------------------------------------------------------------------------- 로봇 위치 관련 파라미터 -------------------------------------------------------------------- */
     Pose2D GoliePos; // 키퍼 목표 위치
+    Pose2D filtered_GoliePos; // 저역 통과 필터에 쓰이는 키퍼 목표 위치
     Pose2D Pred_ball; // 예측된 공의 위치
     Pose2D robotPoseToField;
     Pose2D odomToField;      

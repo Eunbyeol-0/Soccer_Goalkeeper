@@ -50,7 +50,6 @@ private:
     // ----- 카메라 들어오는 프레임 판별용 -----
     bool has_last_meas_{false};
     rclcpp::Time last_meas_stamp_{0, 0, RCL_ROS_TIME};
-
     Brain *brain;
 };
 
@@ -65,6 +64,9 @@ public:
             InputPort<double>("golie_radius", 1.0, "골대 중앙을 기준으로 하는 반경"),
             InputPort<double>("ctPosx", -4.5, "골대중앙의 위치"),
             InputPort<double>("ctPosy", 0.0, "골대중앙의 위치"),
+            InputPort<double>("alpha", 0.3, "저역통과 필터 파라미터"),
+            InputPort<double>("snap_dist", 0.15, "이 이상 크게 바뀌면 스냅"),
+
         };
     }
 
@@ -72,6 +74,7 @@ public:
 
 private:
 
+    bool has_filtered_{false};
     Brain *brain;
 };
 
@@ -91,7 +94,9 @@ public:
             InputPort<double>("ctPosx", -4.5, "골대중앙의 위치"),
             InputPort<double>("ctPosy", 0.0, "골대중앙의 위치"),
             InputPort<double>("Kp_theta", 2.0, "각속도의 P gain"),
-            InputPort<double>("Kp", 2.0, "선속도의 P gain"),
+            InputPort<double>("Kp_x", 1.5, "x 방향 선속도의 P gain"),
+            InputPort<double>("Kp_y", 2.5, "y 방향 선속도의 P gain"),
+
         };
     }
 

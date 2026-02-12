@@ -184,22 +184,22 @@ void GameControllerNode::handle_packet(HlRoboCupGameControlData &data, game_cont
     msg.secs_remaining = data.secsRemaining;
     msg.secondary_time = data.secondaryTime;
 
-    // RCLCPP_INFO(get_logger(), "-------------------- GameController Data -------------------------");
+    RCLCPP_INFO(get_logger(), "-------------------- GameController Data -------------------------");
     
-    // RCLCPP_INFO(get_logger(), "header: %02x %02x %02x %02x, "
-    //             "version=%d, packet_number=%d, players_per_team=%d",
-    //             msg.header[0], msg.header[1], msg.header[2], msg.header[3],
-    //             msg.version, msg.packet_number, msg.players_per_team);
-    // RCLCPP_INFO(get_logger(), "game_type=%d, state=%d, "
-    //             "first_half=%d, kick_off_team=%d, secondary_state=%d, "
-    //             "drop_in_team=%d, drop_in_time=%d, secs_remaining=%d, secondary_time=%d",
-    //             msg.game_type, msg.state, msg.first_half,
-    //             msg.kick_off_team, msg.secondary_state,
-    //             msg.drop_in_team, msg.drop_in_time,
-    //             msg.secs_remaining, msg.secondary_time);
-    // RCLCPP_INFO(get_logger(), "secondary_state_info: %d %d %d %d",
-    //             msg.secondary_state_info[0], msg.secondary_state_info[1],
-    //             msg.secondary_state_info[2], msg.secondary_state_info[3]);
+    RCLCPP_INFO(get_logger(), "header: %02x %02x %02x %02x, "
+                "version=%d, packet_number=%d, players_per_team=%d",
+                msg.header[0], msg.header[1], msg.header[2], msg.header[3],
+                msg.version, msg.packet_number, msg.players_per_team);
+    RCLCPP_INFO(get_logger(), "game_type=%d, state=%d, "
+                "first_half=%d, kick_off_team=%d, secondary_state=%d, "
+                "drop_in_team=%d, drop_in_time=%d, secs_remaining=%d, secondary_time=%d",
+                msg.game_type, msg.state, msg.first_half,
+                msg.kick_off_team, msg.secondary_state,
+                msg.drop_in_team, msg.drop_in_time,
+                msg.secs_remaining, msg.secondary_time);
+    RCLCPP_INFO(get_logger(), "secondary_state_info: %d %d %d %d",
+                msg.secondary_state_info[0], msg.secondary_state_info[1],
+                msg.secondary_state_info[2], msg.secondary_state_info[3]);
 
     // teams 是固定长度 2
     for (int i = 0; i < 2; i++)

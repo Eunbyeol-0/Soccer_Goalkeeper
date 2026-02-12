@@ -3,9 +3,9 @@
   <include path="./locate.xml" />
   <include path="./find_ball.xml" />
   <include path="./auto_getup_and_locate.xml" />
-  <include path="./subtrees/goalkeeper.xml" />
+  <include path="./goalkeeper.xml" />
 
-  <BehaviorTree ID="Goalkeeper">
+  <BehaviorTree ID="Goalkeeper_setpiece">
     <ReactiveSequence>
       <!-- 자기 위치 추정 -->
       <SelfLocate mode="trust_direction" />
@@ -16,19 +16,19 @@
         <ReactiveSequence _while="gc_game_sub_state=='STOP'">
             <SetVelocity x="0.0" y="0.0" theta="0.0" /> 
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
         
         <ReactiveSequence _while="gc_game_sub_state=='GET_READY'">
             <SubTree ID="CamFindAndTrackBall" _autoremap="true" />
             <GolieInitPos vx_limit="0.3" vy_limit="0.15"/>
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
 
         <ReactiveSequence _while="gc_game_sub_state=='SET'">
             <SetVelocity x="0.0" y="0.0" theta="0.0" />
             <SubTree ID="CamFindAndTrackBall" _autoremap="true" /> 
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
       </ReactiveSequence>
 
       <!-- 2. Indirect_Free_Kick -->
@@ -36,19 +36,19 @@
         <ReactiveSequence _while="gc_game_sub_state=='STOP'">
             <SetVelocity x="0.0" y="0.0" theta="0.0" /> 
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
         
         <ReactiveSequence _while="gc_game_sub_state=='GET_READY'">
             <SubTree ID="CamFindAndTrackBall" _autoremap="true" />
             <GolieInitPos vx_limit="0.3" vy_limit="0.15"/>
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
 
         <ReactiveSequence _while="gc_game_sub_state=='SET'">
             <SetVelocity x="0.0" y="0.0" theta="0.0" />
             <SubTree ID="CamFindAndTrackBall" _autoremap="true" /> 
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
       </ReactiveSequence>
       
       <!-- 3. Penalty_Kick -->
@@ -56,19 +56,19 @@
         <ReactiveSequence _while="gc_game_sub_state=='STOP'">
             <SetVelocity x="0.0" y="0.0" theta="0.0" />
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
         
         <ReactiveSequence _while="gc_game_sub_state=='GET_READY'">
             <SubTree ID="CamFindAndTrackBall" _autoremap="true" />
             <GolieInitPos vx_limit="0.3" vy_limit="0.15"/>
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
 
         <ReactiveSequence _while="gc_game_sub_state=='SET'">
             <SetVelocity x="0.0" y="0.0" theta="0.0" />
             <SubTree ID="CamFindAndTrackBall" _autoremap="true" /> 
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
       </ReactiveSequence>
 
       <!-- 4. Corner_Kick -->
@@ -76,19 +76,19 @@
         <ReactiveSequence _while="gc_game_sub_state=='STOP'">
             <SetVelocity x="0.0" y="0.0" theta="0.0" />
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
         
         <ReactiveSequence _while="gc_game_sub_state=='GET_READY'">
             <SubTree ID="CamFindAndTrackBall" _autoremap="true" />
             <GolieInitPos vx_limit="0.3" vy_limit="0.15"/>
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
 
         <ReactiveSequence _while="gc_game_sub_state=='SET'">
             <SetVelocity x="0.0" y="0.0" theta="0.0" />
             <SubTree ID="CamFindAndTrackBall" _autoremap="true" /> 
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
       </ReactiveSequence>
 
       <!-- 5. Goal_Kick -->
@@ -96,19 +96,19 @@
         <ReactiveSequence _while="gc_game_sub_state=='STOP'">
             <SetVelocity x="0.0" y="0.0" theta="0.0" />
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
         
         <ReactiveSequence _while="gc_game_sub_state=='GET_READY'">
             <SubTree ID="CamFindAndTrackBall" _autoremap="true" />
             <GolieInitPos vx_limit="0.3" vy_limit="0.15"/>
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
 
         <ReactiveSequence _while="gc_game_sub_state=='SET'">
             <SetVelocity x="0.0" y="0.0" theta="0.0" />
             <SubTree ID="CamFindAndTrackBall" _autoremap="true" /> 
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
       </ReactiveSequence>
 
       <!-- 6. Throw_In -->
@@ -116,19 +116,19 @@
         <ReactiveSequence _while="gc_game_sub_state=='STOP'">
             <SetVelocity x="0.0" y="0.0" theta="0.0" />
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
         
         <ReactiveSequence _while="gc_game_sub_state=='GET_READY'">
             <SubTree ID="CamFindAndTrackBall" _autoremap="true" />
             <GolieInitPos vx_limit="0.3" vy_limit="0.15"/>
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
 
         <ReactiveSequence _while="gc_game_sub_state=='SET'">
             <SetVelocity x="0.0" y="0.0" theta="0.0" />
             <SubTree ID="CamFindAndTrackBall" _autoremap="true" /> 
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
       </ReactiveSequence>
 
       <!-- 7. Free_Kick (default) -->
@@ -136,19 +136,19 @@
         <ReactiveSequence _while="gc_game_sub_state=='STOP'">
             <SetVelocity x="0.0" y="0.0" theta="0.0" />
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
         
         <ReactiveSequence _while="gc_game_sub_state=='GET_READY'">
             <SubTree ID="CamFindAndTrackBall" _autoremap="true" />
             <GolieInitPos vx_limit="0.3" vy_limit="0.15"/>
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
 
         <ReactiveSequence _while="gc_game_sub_state=='SET'">
             <SetVelocity x="0.0" y="0.0" theta="0.0" />
             <SubTree ID="CamFindAndTrackBall" _autoremap="true" /> 
             <SubTree ID="Locate" _autoremap="true" />
-        <ReactiveSequence/>
+        </ReactiveSequence>
       </ReactiveSequence>
 
     </ReactiveSequence>
